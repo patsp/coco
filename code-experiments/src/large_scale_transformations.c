@@ -212,7 +212,7 @@ static void ls_compute_truncated_uniform_swap_permutation(size_t *P, long seed, 
 
   ls_random_data = coco_allocate_vector(n);
   idx_order = coco_allocate_vector_size_t(n);
-  for (i = 0; i < n; i++){
+  for (i = 0; (size_t) i < n; i++){
     P[i] = (size_t) i;
     idx_order[i] = (size_t) i;
     ls_random_data[i] = coco_random_uniform(rng);
@@ -222,7 +222,7 @@ static void ls_compute_truncated_uniform_swap_permutation(size_t *P, long seed, 
     /*sort the random data in random_data and arange idx_order accordingly*/
     /*did not use ls_compute_random_permutation to only use the seed once*/
     qsort(idx_order, n, sizeof(size_t), f_compare_doubles_for_random_permutation);
-    for (idx_swap = 0; idx_swap < nb_swaps; idx_swap++) {
+    for (idx_swap = 0; (size_t) idx_swap < nb_swaps; idx_swap++) {
       first_swap_var = idx_order[idx_swap];
       if (first_swap_var < swap_range) {
         lower_bound = 0;
@@ -283,7 +283,7 @@ size_t *coco_duplicate_size_t_vector(const size_t *src, const size_t number_of_e
 size_t *ls_get_block_sizes(size_t *nb_blocks, size_t dimension){
   size_t *block_sizes;
   size_t block_size;
-  int i;
+  size_t i;
   
   block_size = coco_double_to_size_t(bbob2009_fmin((double)dimension / 4, 100));
   *nb_blocks = dimension / block_size + ((dimension % block_size) > 0);
