@@ -248,7 +248,7 @@ class CONSBBOBTestbed(GECCOBBOBTestbed):
         shortinfo_filename = shortinfo_filename,
         short_names = get_short_names(shortinfo_filename),
         name = testbed_name_cons,
-        functions_with_legend = (1, 48),
+        functions_with_legend = [i for i in range(1, 48 + 1)],
         first_function_number = 1,
         last_function_number = 48,
         reference_algorithm_filename = '',
