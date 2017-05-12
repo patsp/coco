@@ -65,7 +65,9 @@ save_zoom = False  # save zoom into left and right part of the figures
 perfprofsamplesize = genericsettings.simulated_runlength_bootstrap_sample_size  # number of bootstrap samples drawn for each fct+target in the performance profile
 nbperdecade = 1
 median_max_evals_marker_format = ['x', 24, 3]
-label_fontsize = 18
+#label_fontsize = 18
+#SPPA
+label_fontsize = 10
 styles = [d.copy() for d in genericsettings.line_styles]  # deep copy
 
 refcolor = 'wheat'
@@ -176,6 +178,8 @@ def beautify():
     a.set_xscale('log')
     # Tick label handling
     plt.xlim(xmin=1e-0)
+    #SPPA
+    plt.tick_params(labelsize=10)
 
     global divide_by_dimension
     if divide_by_dimension:
@@ -336,8 +340,10 @@ def plotLegend(handles, maxval):
         lh = min(lh, len(show_algorithms))
     if lh <= 1:
         lh = 2
-    fontsize = genericsettings.minmax_algorithm_fontsize[0] + np.min((1, np.exp(9 - lh))) * (
-        genericsettings.minmax_algorithm_fontsize[-1] - genericsettings.minmax_algorithm_fontsize[0])
+    #fontsize = genericsettings.minmax_algorithm_fontsize[0] + np.min((1, np.exp(9 - lh))) * (
+    #    genericsettings.minmax_algorithm_fontsize[-1] - genericsettings.minmax_algorithm_fontsize[0])
+    #SPPA
+    fontsize = 10
     i = 0  # loop over the elements of ys
     for j in sorted(ys.keys()):
         for k in reversed(sorted(ys[j].keys())):
@@ -422,7 +428,13 @@ def plot(dsList, targets=None, craftingeffort=0., **kwargs):
             runlengthunsucc = []
             evals = entry.detEvals([t])[0]
             runlengthsucc = evals[np.isnan(evals) == False] / divisor
+            #SPPA
+            if divisor > 1:
+                runlengthsucc = map(lambda x: max(x, 1), runlengthsucc)
             runlengthunsucc = entry.maxevals[np.isnan(evals)] / divisor
+            #SPPA
+            if divisor > 1:
+                runlengthunsucc = map(lambda x: max(x, 1), runlengthunsucc)
             if len(runlengthsucc) > 0:
                 x = toolsstats.drawSP(runlengthsucc, runlengthunsucc,
                                       percentiles=[50],
@@ -637,7 +649,13 @@ def main(dictAlg, order=None, outputdir='.', info='default',
                         evals = entry.detEvals([t])[0]
                         assert entry.dim == dim
                         runlengthsucc = evals[np.isnan(evals) == False] / divisor
+                        #SPPA
+                        if divisor > 1:
+                            runlengthsucc = map(lambda x: max(x, 1), runlengthsucc)
                         runlengthunsucc = entry.maxevals[np.isnan(evals)] / divisor
+                        #SPPA
+                        if divisor > 1:
+                            runlengthunsucc = map(lambda x: max(x, 1), runlengthunsucc)
                         if len(runlengthsucc) > 0:
                             x = toolsstats.drawSP(runlengthsucc, runlengthunsucc,
                                                   percentiles=[50],
@@ -676,7 +694,13 @@ def main(dictAlg, order=None, outputdir='.', info='default',
                             # set_trace()
                             assert dim == refalgentry.dim
                             runlengthsucc = evals[np.isnan(evals) == False] / divisor
+                            #SPPA
+                            if divisor > 1:
+                                runlengthsucc = map(lambda x: max(x, 1), runlengthsucc)
                             runlengthunsucc = refalgentry.maxevals[refalgevals[1][j]][np.isnan(evals)] / divisor
+                            #SPPA
+                            if divisor > 1:
+                                runlengthunsucc = map(lambda x: max(x, 1), runlengthunsucc)
                             x = toolsstats.drawSP(runlengthsucc, runlengthunsucc,
                                                   percentiles=[50],
                                                   samplesize=perfprofsamplesize)[1]
@@ -826,10 +850,10 @@ def main(dictAlg, order=None, outputdir='.', info='default',
     text += ' instances'
 
     plt.text(0.01, 0.98, text, horizontalalignment="left",
-             verticalalignment="top", transform=plt.gca().transAxes, size='small')
+             verticalalignment="top", transform=plt.gca().transAxes, size=10) #SPPA
     if len(dictFunc) == 1:
         plt.title(' '.join((str(dictFunc.keys()[0]),
-                            testbedsettings.current_testbed.short_names[dictFunc.keys()[0]])))
+                            testbedsettings.current_testbed.short_names[dictFunc.keys()[0]])), fontsize=10) #SPPA
     a = plt.gca()
 
     plt.xlim(xmin=1e-0, xmax=x_limit ** annotation_space_end_relative)

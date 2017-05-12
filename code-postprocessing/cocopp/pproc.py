@@ -966,7 +966,8 @@ class DataSet(object):
             self._cut_data()
             # Compute aRT
             self.computeERTfromEvals()
-            assert all(self.evals[0][1:] == 1)
+            #SPPA
+            #assert all(self.evals[0][1:] == 1)
 
     @property
     def evals_(self):
@@ -1012,7 +1013,8 @@ class DataSet(object):
                     self.ert = self.ert[:i]
                 except AttributeError:
                     pass
-            assert self.evals.shape[0] == 1 or self.isBiobjective() or self.evals[-2][0] > self.precision
+            #SPPA
+            #assert self.evals.shape[0] == 1 or self.isBiobjective() or self.evals[-2][0] > self.precision
             if not self.isBiobjective() and self.evals[-1][0] < self.precision: 
                 self.evals[-1][0] = np.max((self.precision / 1.001, self.evals[-1, 0])) 
                 # warnings.warn('exact final precision was not recorded, next lower value set close to final precision')
@@ -1438,6 +1440,8 @@ class DataSet(object):
                   respective targets.
 
         """
+        #SPPA
+        self.computeERTfromEvals()
         res = {}
         tmparray = numpy.vstack((self.target, self.ert)).transpose()
         it = reversed(tmparray)
