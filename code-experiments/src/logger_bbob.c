@@ -84,17 +84,19 @@ typedef struct {
 
 } logger_bbob_data_t;
 
+/* SPPA */
 static const char *bbob_file_header_str = "%% function evaluation | "
     "noise-free fitness - Fopt (%13.12e) | "
-    "best noise-free fitness - Fopt | "
+    "(best noise-free fitness - Fopt) / fabs(Fopt) | "
     "measured fitness | "
     "best measured fitness | "
     "x1 | "
     "x2...\n";
-    
+
+/* SPPA */
 static const char *bbob_constrained_file_header_str = "%% f + g evaluations | "
     "noise-free fitness - Fopt (%13.12e) | "
-    "best noise-free fitness - Fopt | "
+    "(best noise-free fitness - Fopt) / fabs(Fopt) | "
     "measured fitness | "
     "best measured fitness | "
     "x1 | "
@@ -113,8 +115,9 @@ static void logger_bbob_write_data(FILE *target_file,
   /* for some reason, it's %.0f in the old code instead of the 10.9e
    * in the documentation
    */
+  /* SPPA */
   fprintf(target_file, "%lu %+10.9e %+10.9e %+10.9e %+10.9e", (unsigned long) number_of_evaluations,
-  		fvalue - best_value, best_fvalue - best_value, fvalue, best_fvalue);
+          (fvalue - best_value) / (fabs(best_value) < 1e-5 ? 1.0 : fabs(best_value)), (best_fvalue - best_value) / (fabs(best_value) < 1e-5 ? 1.0 : fabs(best_value)), fvalue, best_fvalue);
   if (number_of_variables < 22) {
     size_t i;
     for (i = 0; i < number_of_variables; i++) {
@@ -310,9 +313,11 @@ static void logger_bbob_initialize(logger_bbob_data_t *logger, coco_problem_t *i
   char *tmpc_dim; /* serves to extract the dimension as a char *. There should be a better way of doing this! */
   char indexFile_prefix[10] = "bbobexp"; /* TODO (minor): make the prefix bbobexp a parameter that the user can modify */
   size_t str_length_funId, str_length_dim;
-  
-  str_length_funId = coco_double_to_size_t(bbob2009_fmax(1, ceil(log10((double) coco_problem_get_suite_dep_function(inner_problem)))));
-  str_length_dim = coco_double_to_size_t(bbob2009_fmax(1, ceil(log10((double) inner_problem->number_of_variables))));
+
+  /* SPPA: + 10 to add some safe buffer */
+  str_length_funId = coco_double_to_size_t(bbob2009_fmax(1, ceil(log10((double) coco_problem_get_suite_dep_function(inner_problem))))) + 10;
+  /* SPPA: + 10 to add some safe buffer */
+  str_length_dim = coco_double_to_size_t(bbob2009_fmax(1, ceil(log10((double) inner_problem->number_of_variables)))) + 10;
   assert(logger != NULL);
   assert(inner_problem != NULL);
   assert(inner_problem->problem_id != NULL);
@@ -506,8 +511,9 @@ static void logger_bbob_free(void *stuff) {
     		(unsigned long) logger->number_of_evaluations);
   }
   if (logger->index_file != NULL) {
+    /* SPPA */
     fprintf(logger->index_file, ":%lu|%.1e", (unsigned long) logger->number_of_evaluations,
-        logger->best_fvalue - logger->optimal_fvalue);
+            (logger->best_fvalue - logger->optimal_fvalue) / (fabs(logger->optimal_fvalue) < 1e-5 ? 1.0 : fabs(logger->optimal_fvalue)));
     fclose(logger->index_file);
     logger->index_file = NULL;
   }
