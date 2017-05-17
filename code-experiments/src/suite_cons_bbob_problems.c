@@ -183,7 +183,12 @@ static coco_problem_t *f_sphere_c_linear_cons_bbob_problem_allocate(const size_t
    * number of f-evaluations, reset it to zero.
    */
   problem->evaluations = 0;
-     
+
+  /* SPPA: Since the call to coco_evaluation_function above updates
+   * the problem->best_observed_fvalue, reset it.
+   */
+  problem->best_observed_fvalue[0] = DBL_MAX;
+
   /* Apply a translation to the whole problem so that the constrained 
    * minimum is no longer at the origin.
    */
@@ -262,7 +267,12 @@ static coco_problem_t *f_ellipsoid_c_linear_cons_bbob_problem_allocate(const siz
    * number of f-evaluations, reset it to zero.
    */
   problem->evaluations = 0; 
-  
+
+  /* SPPA: Since the call to coco_evaluation_function above updates
+   * the problem->best_observed_fvalue, reset it.
+   */
+  problem->best_observed_fvalue[0] = DBL_MAX;
+
   problem = transform_vars_oscillate(problem);
      
   /* Apply a translation to the whole problem so that the constrained 
@@ -343,7 +353,12 @@ static coco_problem_t *f_ellipsoid_rotated_c_linear_cons_bbob_problem_allocate(c
    * number of f-evaluations, reset it to zero.
    */
   problem->evaluations = 0;
-  
+
+  /* SPPA: Since the call to coco_evaluation_function above updates
+   * the problem->best_observed_fvalue, reset it.
+   */
+  problem->best_observed_fvalue[0] = DBL_MAX;
+
   problem = transform_vars_oscillate(problem);
      
   /* Apply a translation to the whole problem so that the constrained 
@@ -424,7 +439,12 @@ static coco_problem_t *f_linear_slope_c_linear_cons_bbob_problem_allocate(const 
    * number of f-evaluations, reset it to zero.
    */
   problem->evaluations = 0;
-     
+
+  /* SPPA: Since the call to coco_evaluation_function above updates
+   * the problem->best_observed_fvalue, reset it.
+   */
+  problem->best_observed_fvalue[0] = DBL_MAX;
+
   /* Apply a translation to the whole problem so that the constrained 
    * minimum is no longer at the origin.
    */
@@ -503,7 +523,12 @@ static coco_problem_t *f_discus_c_linear_cons_bbob_problem_allocate(const size_t
    * number of f-evaluations, reset it to zero.
    */
   problem->evaluations = 0;  
-     
+
+  /* SPPA: Since the call to coco_evaluation_function above updates
+   * the problem->best_observed_fvalue, reset it.
+   */
+  problem->best_observed_fvalue[0] = DBL_MAX;
+
   problem = transform_vars_oscillate(problem);
      
   /* Apply a translation to the whole problem so that the constrained 
@@ -584,7 +609,12 @@ static coco_problem_t *f_bent_cigar_c_linear_cons_bbob_problem_allocate(const si
    * number of f-evaluations, reset it to zero.
    */
   problem->evaluations = 0;  
-     
+
+  /* SPPA: Since the call to coco_evaluation_function above updates
+   * the problem->best_observed_fvalue, reset it.
+   */
+  problem->best_observed_fvalue[0] = DBL_MAX;
+
   problem = transform_vars_asymmetric(problem, 0.2);
      
   /* Apply a translation to the whole problem so that the constrained 
@@ -665,7 +695,12 @@ static coco_problem_t *f_different_powers_c_linear_cons_bbob_problem_allocate(co
    * number of f-evaluations, reset it to zero.
    */
   problem->evaluations = 0;
-     
+
+  /* SPPA: Since the call to coco_evaluation_function above updates
+   * the problem->best_observed_fvalue, reset it.
+   */
+  problem->best_observed_fvalue[0] = DBL_MAX;
+
   /* Apply a translation to the whole problem so that the constrained 
    * minimum is no longer at the origin.
    */
@@ -749,7 +784,12 @@ static coco_problem_t *f_rastrigin_c_linear_cons_bbob_problem_allocate(const siz
    * number of f-evaluations, reset it to zero.
    */
   problem->evaluations = 0;  
-  
+
+  /* SPPA: Since the call to coco_evaluation_function above updates
+   * the problem->best_observed_fvalue, reset it.
+   */
+  problem->best_observed_fvalue[0] = DBL_MAX;
+
   problem = transform_vars_asymmetric(problem, 0.2);
   problem = transform_vars_oscillate(problem);
   
