@@ -11,21 +11,25 @@ scenario_biobjfixed = 'biobjfixed'
 scenario_biobjrlbased = 'biobjrlbased'
 scenario_biobjextfixed = 'biobjextfixed'
 scenario_constrainedfixed = 'constrainedfixed'
+scenario_customfixed = 'customfixed' #SPPA
 all_scenarios = [scenario_rlbased, scenario_fixed,
                  scenario_biobjfixed, scenario_biobjrlbased,
-                 scenario_biobjextfixed, scenario_constrainedfixed]
+                 scenario_biobjextfixed, scenario_constrainedfixed,
+                 scenario_customfixed] #SPPA
 
 testbed_name_single = 'bbob'
 testbed_name_single_noisy = 'bbob-noisy'
 testbed_name_bi = 'bbob-biobj'
 testbed_name_bi_ext = 'bbob-biobj-ext'
 testbed_name_cons = 'bbob-constrained'
+testbed_name_custom = 'custom' #SPPA
 
 default_testbed_single = 'GECCOBBOBTestbed'
 default_testbed_single_noisy = 'GECCOBBOBNoisyTestbed'
 default_testbed_bi = 'GECCOBiObjBBOBTestbed'
 default_testbed_bi_ext = 'GECCOBiObjExtBBOBTestbed'
 default_testbed_cons = 'CONSBBOBTestbed'
+default_testbed_custom = 'CUSTOMTestbed' #SPPA
 
 current_testbed = None
 
@@ -34,7 +38,8 @@ suite_to_testbed = {
     'bbob-noisy' : default_testbed_single_noisy,
     'bbob-biobj' : default_testbed_bi,
     'bbob-biobj-ext' : default_testbed_bi_ext,
-    'bbob-constrained' : default_testbed_cons
+    'bbob-constrained' : default_testbed_cons,
+    'custom' : default_testbed_custom #SPPA
 }
 
 
@@ -266,6 +271,35 @@ class CONSBBOBTestbed(GECCOBBOBTestbed):
             self.reference_algorithm_filename = 'best2018-bbob-constrained.tar.gz' # TODO: implement
             self.reference_algorithm_displayname = 'best 2018'  # TODO: should be read in from data set in reference_algorithm_filename
 
+#SPPA
+class CUSTOMTestbed(GECCOBBOBTestbed):
+    """Testbed for custom problems.
+    """
+
+    shortinfo_filename = 'custom-benchmarkshortinfos.txt'
+
+    settings = dict(
+        info_filename = 'custom-benchmarkinfos.txt',
+        shortinfo_filename = shortinfo_filename,
+        short_names = get_short_names(shortinfo_filename),
+        name = testbed_name_custom,
+        functions_with_legend = [i for i in range(1, 1 + 1)],
+        first_function_number = 1,
+        last_function_number = 1,
+        reference_algorithm_filename = '',
+        reference_algorithm_displayname = '',  # TODO: should be read in from data set in reference_algorithm_filename
+        scenario = scenario_constrainedfixed
+    )
+
+    def __init__(self, target_values):
+        super(CUSTOMTestbed, self).__init__(target_values)
+
+        for key, val in CUSTOMTestbed.settings.items():
+            setattr(self, key, val)
+        if 11 < 3:
+            # override settings if needed...
+            self.reference_algorithm_filename = 'best2018-bbob-constrained.tar.gz' # TODO: implement
+            self.reference_algorithm_displayname = 'best 2018'  # TODO: should be read in from data set in reference_algorithm_filename
 
         
 

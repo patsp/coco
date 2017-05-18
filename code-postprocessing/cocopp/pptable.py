@@ -98,7 +98,9 @@ def get_table_caption():
             table_caption = table_caption_start + table_caption_rlbased + table_caption_rest
         else:
             table_caption = table_caption_start + table_caption_fixedtargets + table_caption_rest
-    elif testbedsettings.current_testbed.name in ['bbob-biobj-ext', testbedsettings.testbed_name_cons]:
+    elif testbedsettings.current_testbed.name in ['bbob-biobj-ext',
+                                                  testbedsettings.testbed_name_cons,
+                                                  testbedsettings.testbed_name_custom]: #SPPA
         # all testbeds without provided reference algorithm
         table_caption = table_caption_no_reference_algorithm
     else:
