@@ -52,9 +52,12 @@ void coco_evaluate_function(coco_problem_t *problem, const double *x, double *y)
   problem->evaluations++; /* each derived class has its own counter, only the most outer will be visible */
 
   /* A little bit of bookkeeping */
-  if (y[0] < problem->best_observed_fvalue[0]) {
-    problem->best_observed_fvalue[0] = y[0];
-    problem->best_observed_evaluation[0] = problem->evaluations;
+  /* SPPA */
+  if (y[0] + 1e-13 >= problem->best_value[0]) {
+    if (y[0] < problem->best_observed_fvalue[0]) {
+      problem->best_observed_fvalue[0] = y[0];
+      problem->best_observed_evaluation[0] = problem->evaluations;
+    }
   }
 
 }
