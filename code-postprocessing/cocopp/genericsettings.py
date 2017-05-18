@@ -41,8 +41,8 @@ xlimit_expensive = 1e3  # used in
 # tabValsOfInterest = (1.0, 1.0e-2, 1.0e-4, 1.0e-6, 1.0e-8)
 # tabValsOfInterest = (10, 1.0, 1e-1, 1e-3, 1e-5, 1.0e-8)
 
-dim_related_markers = ('+', 'v', '*', 'o', 's', 'D', 'x') + ('x',) * 8
-dim_related_colors = ('c', 'g', 'b', 'k', 'r', 'm', 'k', 'y', 'k', 'c', 'r', 'm') + ('m',) * 3
+dim_related_markers = ('+', 'v', '*', 'o', 's', 'D', 'x') + ('x',) * 8 #SPPA
+dim_related_colors = ('c', 'g', 'b', 'k', 'r', 'm', 'k', 'y', 'k', 'c', 'r', 'm') + ('m',) * 3 #SPPA
 
 rldDimsOfInterest = (5, 20)
 
