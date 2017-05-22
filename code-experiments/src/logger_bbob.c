@@ -587,6 +587,7 @@ static void logger_bbob_free(void *stuff) {
     logger->evaluations = NULL;
   }
 
+  /* SPPA */
   if (logger->bbob_dimensions_in_current_infoFile != NULL) {
       coco_free_memory(logger->bbob_dimensions_in_current_infoFile);
       logger->bbob_dimensions_in_current_infoFile = NULL;
@@ -646,6 +647,10 @@ static coco_problem_t *logger_bbob(coco_observer_t *observer, coco_problem_t *in
   logger_bbob->evaluations = coco_observer_evaluations(observer->base_evaluation_triggers, inner_problem->number_of_variables);
 
   problem = coco_problem_transformed_allocate(inner_problem, logger_bbob, logger_bbob_free, observer->observer_name);
+
+  /* SPPA */
+  logger_bbob->bbob_dimensions_in_current_infoFile = NULL;
+  logger_bbob->bbob_number_of_dimensions = 0;
 
   problem->evaluate_function = logger_bbob_evaluate;
   bbob_logger_is_open = 1;
