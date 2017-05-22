@@ -64,7 +64,8 @@ def prepare_scaling_figure_caption():
     elif testbedsettings.current_testbed.name in [testbedsettings.testbed_name_single,
                                                   testbedsettings.testbed_name_single_noisy,
                                                   testbedsettings.testbed_name_bi,
-                                                  testbedsettings.testbed_name_cons]:
+                                                  testbedsettings.testbed_name_cons,
+                                                  testbedsettings.testbed_name_custom]:
         if genericsettings.runlength_based_targets:
             figure_caption = scaling_figure_caption_rlbased
         else:
@@ -128,7 +129,8 @@ def prepare_ecdfs_figure_caption():
                 )
 
     if testbed.name in [testbedsettings.testbed_name_bi_ext,
-                        testbedsettings.testbed_name_cons]:
+                        testbedsettings.testbed_name_cons,
+                        testbedsettings.testbed_name_custom]:
         # NOTE: no runlength-based targets supported yet
         figure_caption = ecdfs_figure_caption_standard
     elif testbed.name in [testbedsettings.testbed_name_single,
