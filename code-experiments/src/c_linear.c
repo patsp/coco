@@ -12,6 +12,7 @@
 
 #include "coco.h"
 #include "coco_internal.h"
+
 /**
  * @brief Data type for the linear constraints.
  */
@@ -40,6 +41,8 @@ static coco_problem_t *c_linear_transform(coco_problem_t *inner_problem,
          
 static coco_problem_t *c_linear_shuffle(coco_problem_t *problem_c, 
                                         linear_constraint_data_t *data_c1);
+                                                                                    
+double randn(double mu, double sigma);
                                                    
 static coco_problem_t *c_linear_single_cons_bbob_problem_allocate(const size_t function,
                                                       const size_t dimension,
@@ -203,7 +206,6 @@ static coco_problem_t *c_linear_shuffle(coco_problem_t *problem_c,
   coco_problem_t *iter_problem;
   coco_problem_stacked_data_t *stacked_data;
   linear_constraint_data_t *constraint_data;
-  coco_random_state_t *random_generator;
   double aux;
   size_t i, exchanged;
   
@@ -225,8 +227,7 @@ static coco_problem_t *c_linear_shuffle(coco_problem_t *problem_c,
    * 2. 'random' ranges from M to (N+0.9999), but, since 'exchanged'
    *    is of type size_t, the fraction is discarded.
    */
-  random_generator = coco_random_new(1); /* TODO: choose problem-dependent seed */
-  exchanged = 2 + coco_random_uniform(random_generator) * (problem_c->number_of_constraints - 1); /*(rand() / (RAND_MAX + 1.0)) * (problem_c->number_of_constraints - 2 + 1);*/
+  exchanged = 2 + (rand() / (RAND_MAX + 1.0)) * (problem_c->number_of_constraints - 2 + 1);
   
   /* Run through the stack until the chosen constraint is found */
   for (i = problem_c->number_of_constraints; i > exchanged; --i) {
@@ -249,8 +250,47 @@ static coco_problem_t *c_linear_shuffle(coco_problem_t *problem_c,
     constraint_data->gradient[i] = data_c1->gradient[i];
     data_c1->gradient[i] = aux;
   }
-  coco_random_free(random_generator);
+  
   return problem_c;
+}
+
+/**
+ * @brief Implements the Marsaglia polar method.
+ * 
+ * It first generates a pair of independent standard normal random 
+ * variables X1 and X2. For having normal random variables with 
+ * mean 'mu' and variance 'sigma', it does a simple transform of 
+ * the type mu + sigma * X1 and mu + sigma * X2.
+ */
+double randn(double mu, double sigma) {
+	
+  double U1, U2, W, mult;
+  static double X1, X2;
+  static int call = 1;
+ 
+  /* Return the second generated variable from previous call that
+   * has not been used yet 
+   */
+  if (call % 2 == 0) {
+    ++call;
+    return (mu + sigma * (double) X2);
+  }
+ 
+  /* The polar method itself */
+  do {
+    U1 = -1 + ((double)rand () / RAND_MAX) * 2;
+    U2 = -1 + ((double)rand () / RAND_MAX) * 2;
+    W = pow(U1, 2) + pow(U2, 2);
+  }
+  while (W >= 1 || W == 0);
+ 
+  mult = sqrt((-2 * log(W)) / W);
+  X1 = U1 * mult;
+  X2 = U2 * mult;
+ 
+  ++call;
+ 
+  return (mu + sigma * (double)X1);
 }
 
 /**
@@ -276,7 +316,6 @@ static coco_problem_t *c_linear_single_cons_bbob_problem_allocate(const size_t f
   
   double *gradient_linear_constraint = NULL;
   coco_problem_t *problem = NULL;
-  coco_random_state_t *random_generator;
   long seed_cons_i;
   double exp2, factor2;
   
@@ -284,7 +323,7 @@ static coco_problem_t *c_linear_single_cons_bbob_problem_allocate(const size_t f
   
   seed_cons_i = (long)(function + 10000 * instance 
                                 + 50000 * constraint_number);
-  random_generator = coco_random_new((uint32_t) seed_cons_i);
+  srand(seed_cons_i);
   
   /* The constraints gradients are scaled with random numbers
    * 10**U[0,1] and 10**U_i[0,2], where U[a, b] is uniform in [a,b] 
@@ -297,9 +336,9 @@ static coco_problem_t *c_linear_single_cons_bbob_problem_allocate(const size_t f
    */
      
   if (number_of_linear_constraints == dimension + 1)
-    exp2 = coco_random_uniform(random_generator);
+    exp2 = (double)rand() / (double)RAND_MAX;
   else 
-    exp2 = 2.0 * coco_random_uniform(random_generator);
+    exp2 = 2.0 * ((double)rand() / (double)RAND_MAX);
   factor2 = pow(10.0, exp2);
     
   
@@ -309,6 +348,7 @@ static coco_problem_t *c_linear_single_cons_bbob_problem_allocate(const size_t f
    */
   if(gradient) {
 	  
+	 
     coco_scale_vector(gradient, dimension, 1.0);
     for (i = 0; i < dimension; ++i)
       gradient[i] *= factor1 * factor2;
@@ -324,7 +364,7 @@ static coco_problem_t *c_linear_single_cons_bbob_problem_allocate(const size_t f
      * and scale it with 'factor1' and 'factor2' (see comments above)
      */
     for (i = 0; i < dimension; ++i)
-      gradient_linear_constraint[i] = factor1 * coco_random_normal(random_generator) * factor2;
+      gradient_linear_constraint[i] = factor1 * randn(0.0, 1.0) * factor2;
 
     problem = c_linear_transform(problem, gradient_linear_constraint);
     coco_free_memory(gradient_linear_constraint);
@@ -342,7 +382,7 @@ static coco_problem_t *c_linear_single_cons_bbob_problem_allocate(const size_t f
   coco_problem_set_id(problem, problem_id_template, function, instance, dimension);
   coco_problem_set_name(problem, problem_name_template, function, instance, dimension);
   coco_problem_set_type(problem, "linear");
-  coco_random_free(random_generator);
+  
   return problem;
   
 }
@@ -376,7 +416,6 @@ static coco_problem_t *c_linear_cons_bbob_problem_allocate(const size_t function
   coco_problem_t *problem_c = NULL;
   coco_problem_t *problem_c2 = NULL;
   linear_constraint_data_t *data_c1 = NULL;
-  coco_random_state_t *random_generator;
   double *gradient_c1 = NULL;
   long seed_cons;
   double exp1, factor1;
@@ -395,8 +434,8 @@ static coco_problem_t *c_linear_cons_bbob_problem_allocate(const size_t function
   
   /* Calculate the first random factor 10**U[0,1]. */
   seed_cons = (long)(function + 10000 * instance);
-  random_generator = coco_random_new((uint32_t) seed_cons);
-  exp1 = coco_random_uniform(random_generator);
+  srand(seed_cons);
+  exp1 = (double)rand() / (double)RAND_MAX;
   factor1 = pow(10.0, exp1);
   
   /* Build the first linear constraint using 'gradient_c1' to build
@@ -440,7 +479,6 @@ static coco_problem_t *c_linear_cons_bbob_problem_allocate(const size_t function
   problem_c = c_linear_shuffle(problem_c, data_c1);
   
   coco_free_memory(gradient_c1);
-  coco_random_free(random_generator);
   
   return problem_c;
  

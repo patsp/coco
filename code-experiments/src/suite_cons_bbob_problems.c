@@ -738,8 +738,9 @@ static coco_problem_t *f_rastrigin_c_linear_cons_bbob_problem_allocate(const siz
   double feasible_direction_norm = 4.0;
   
   char *problem_type_temp = NULL;
-	 
-  coco_random_state_t *rand_state = coco_random_new((uint32_t) rseed);
+
+  /* SPPA */
+  /* coco_random_state_t *rand_state = coco_random_new((uint32_t) rseed); */
 
   /* Create the objective function */
   problem = f_rastrigin_cons_bbob_problem_allocate(function, dimension, 
@@ -752,10 +753,17 @@ static coco_problem_t *f_rastrigin_c_linear_cons_bbob_problem_allocate(const siz
    * optima would stop at iteration 1 if they used such an initial
    * solution.
    */
-  for (i = 0; i < dimension; ++i)
-    feasible_direction[i] = feasible_direction_norm + coco_random_uniform(rand_state);
+  /* SPPA */
+  srand(rseed);
+  for (i = 0; i < dimension; ++i) {
+      /* SPPA */
+      feasible_direction[i] = feasible_direction_norm + 
+          (double)rand()/((double)RAND_MAX+1);
+      /* feasible_direction[i] = feasible_direction_norm + coco_random_uniform(rand_state); */
+  }
 
-  coco_random_free(rand_state);
+  /* SPPA */
+  /* coco_random_free(rand_state); */
      
   /* Create the constraints. Use the feasible direction above
    * to build the first constraint. 
