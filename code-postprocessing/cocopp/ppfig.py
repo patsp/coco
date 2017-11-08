@@ -17,7 +17,7 @@ import shutil
 from . import genericsettings, testbedsettings, toolsstats, htmldesc, toolsdivers
 
 bbox_inches_choices = {  # do we also need pad_inches = 0?
-    'svg': 'tight',
+    #'svg': 'tight', #SPPA
     #'png': 'tight', # uncomment for bbob-biobj figures
     #'pdf': 'tight', # uncomment for bbob-biobj figures
 }
@@ -531,7 +531,7 @@ def plotUnifLogXMarkers(x, y, nbperdecade, logscale=False, **kwargs):
         res.extend(res2)
 
     if 'label' in kwargs:
-        res3 = plt.plot([], [], **kwargs)
+        res3 = plt.plot([np.nan], [np.nan], **kwargs) #SPPA
         for i in res3:
             i.update_from(res[0])  # copy all attributes of res
         res.extend(res3)
