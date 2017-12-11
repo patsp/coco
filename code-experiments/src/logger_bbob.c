@@ -39,8 +39,12 @@ char *bbob_infoFile_firstInstance_char;
 /* a possible solution: have a list of dims that are already in the file, if the ones we're about to log
  * is != bbob_current_dim and the funId is currend_funId, create a new .info file with as suffix the
  * number of the first instance */
+
+/* SPPA */
+#if 0
 static const int bbob_number_of_dimensions = 6;
 static size_t bbob_dimensions_in_current_infoFile[6] = { 0, 0, 0, 0, 0, 0 }; /* TODO should use dimensions from the suite */
+#endif
 
 /* The current_... mechanism fails if several problems are open.
  * For the time being this should lead to an error.
@@ -84,6 +88,11 @@ typedef struct {
 
   coco_observer_targets_t *targets;          /**< @brief Triggers based on target values. */
   coco_observer_evaluations_t *evaluations;  /**< @brief Triggers based on the number of evaluations. */
+
+  /* SPPA */
+  int bbob_number_of_dimensions; /* number of dimensions of the suite */
+  /* SPPA */
+  size_t *bbob_dimensions_in_current_infoFile; /* array of length bbob_number_of_dimensions */
 
 } logger_bbob_data_t;
 
@@ -219,6 +228,11 @@ static void logger_bbob_openIndexFile(logger_bbob_data_t *logger,
   char file_path[COCO_PATH_MAX + 2] = { 0 };
   FILE **target_file;
   FILE *tmp_file;
+  /* SPPA */
+  const int bbob_number_of_dimensions = logger->bbob_number_of_dimensions;
+  size_t *bbob_dimensions_in_current_infoFile = logger->bbob_dimensions_in_current_infoFile;
+  assert(NULL != bbob_dimensions_in_current_infoFile);
+
   strncpy(used_dataFile_path, dataFile_path, COCO_PATH_MAX - strlen(used_dataFile_path) - 1);
   if (bbob_infoFile_firstInstance == 0) {
     bbob_infoFile_firstInstance = logger->instance_id;
@@ -331,6 +345,7 @@ static void logger_bbob_initialize(logger_bbob_data_t *logger, coco_problem_t *i
   char *tmpc_funId; /* serves to extract the function id as a char *. There should be a better way of doing this! */
   char *tmpc_dim; /* serves to extract the dimension as a char *. There should be a better way of doing this! */
   char indexFile_prefix[10] = "bbobexp"; /* TODO (minor): make the prefix bbobexp a parameter that the user can modify */
+  int i = 0;
   
   assert(logger != NULL);
   assert(inner_problem != NULL);
@@ -352,6 +367,16 @@ static void logger_bbob_initialize(logger_bbob_data_t *logger, coco_problem_t *i
   COCO_PATH_MAX - strlen(dataFile_path) - 1);
   strncat(dataFile_path, "_DIM", COCO_PATH_MAX - strlen(dataFile_path) - 1);
   strncat(dataFile_path, tmpc_dim, COCO_PATH_MAX - strlen(dataFile_path) - 1);
+
+  /* SPPA */
+  assert(coco_problem_get_suite(inner_problem));
+  logger->bbob_number_of_dimensions =
+      (int)coco_problem_get_suite(inner_problem)->number_of_dimensions;
+  logger->bbob_dimensions_in_current_infoFile =
+      coco_allocate_memory(sizeof(size_t) * (size_t)logger->bbob_number_of_dimensions);
+  for (i = 0; i < logger->bbob_number_of_dimensions; ++i) {
+      logger->bbob_dimensions_in_current_infoFile[i] = 0;
+  }
 
   /* index/info file */
   assert(coco_problem_get_suite(inner_problem));
@@ -528,6 +553,13 @@ static void logger_bbob_free(void *stuff) {
     logger->evaluations = NULL;
   }
 
+  /* SPPA */
+  if (logger->bbob_dimensions_in_current_infoFile != NULL) {
+      coco_free_memory(logger->bbob_dimensions_in_current_infoFile);
+      logger->bbob_dimensions_in_current_infoFile = NULL;
+      logger->bbob_number_of_dimensions = 0;
+  }
+
   bbob_logger_is_open = 0;
 }
 
@@ -579,6 +611,10 @@ static coco_problem_t *logger_bbob(coco_observer_t *observer, coco_problem_t *in
   logger_bbob->evaluations = coco_observer_evaluations(observer->base_evaluation_triggers, inner_problem->number_of_variables);
 
   problem = coco_problem_transformed_allocate(inner_problem, logger_bbob, logger_bbob_free, observer->observer_name);
+
+  /* SPPA */
+  logger_bbob->bbob_dimensions_in_current_infoFile = NULL;
+  logger_bbob->bbob_number_of_dimensions = 0;
 
   problem->evaluate_function = logger_bbob_evaluate;
   bbob_logger_is_open = 1;
