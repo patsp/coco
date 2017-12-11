@@ -3,6 +3,10 @@
  * @brief Implementation of oscillating the decision values.
  */
 
+/* SPPA */
+/* #define ENABLE_NON_LINEAR_TRANSFORMATIONS_ON_CONSTRAINTS */
+/* #define ENABLE_NON_LINEAR_TRANSFORMATIONS_ON_OBJECTIVEFUNC */
+
 #include <math.h>
 #include <assert.h>
 
@@ -119,10 +123,15 @@ static coco_problem_t *transform_vars_oscillate(coco_problem_t *inner_problem) {
 
   problem = coco_problem_transformed_allocate(inner_problem, data, 
     transform_vars_oscillate_free, "transform_vars_oscillate");
-    
+
+/* SPPA */
+#ifdef ENABLE_NON_LINEAR_TRANSFORMATIONS_ON_OBJECTIVEFUNC
   if (inner_problem->number_of_objectives > 0)
     problem->evaluate_function = transform_vars_oscillate_evaluate_function;
-    
+#endif
+
+/* SPPA */
+#ifdef ENABLE_NON_LINEAR_TRANSFORMATIONS_ON_CONSTRAINTS
   if (inner_problem->number_of_constraints > 0) {
     problem->evaluate_constraint = transform_vars_oscillate_evaluate_constraint;
     
@@ -143,5 +152,6 @@ static coco_problem_t *transform_vars_oscillate(coco_problem_t *inner_problem) {
       coco_free_memory(cons_values);
     }
   }
+#endif
   return problem;
 }
