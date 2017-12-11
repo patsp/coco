@@ -1,1 +1,1 @@
-1 Klee-Minty cube optimization (posed as minimization) problem
+1 Klee-Minty cube
