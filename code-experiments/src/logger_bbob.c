@@ -95,11 +95,12 @@ typedef struct {
  * best measured fitness | 
  * x1 | x2...
  */
+/* SPPA */
 static const char *bbob_file_header_str = "%% "
     "f evaluations | "
     "g evaluations | "
-    "best noise-free fitness - Fopt | "
-    "noise-free fitness - Fopt (%13.12e) | "
+    "(best noise-free fitness - Fopt) / fabs(Fopt) | "
+    "(noise-free fitness - Fopt (%13.12e)) / fabs(Fopt) | "
     "measured fitness | "
     "best measured fitness | "
     "x1 | "
@@ -122,11 +123,12 @@ static void logger_bbob_write_data(FILE *target_file,
   /* for some reason, it's %.0f in the old code instead of the 10.9e
    * in the documentation
    */
+  /* SPPA */
   fprintf(target_file, "%lu %lu %+10.9e %+10.9e %+10.9e %+10.9e",
           (unsigned long) number_of_f_evaluations,
     	  (unsigned long) number_of_cons_evaluations,
-          best_fvalue - best_value,
-          fvalue - best_value,
+          (best_fvalue - best_value) / (fabs(best_value) < 1e-5 ? 1.0 : fabs(best_value)),
+          (fvalue - best_value) / (fabs(best_value) < 1e-5 ? 1.0 : fabs(best_value)),
     	  fvalue,
           best_fvalue);
   if (number_of_variables < 22) {
@@ -479,9 +481,10 @@ static void logger_bbob_free(void *stuff) {
     		(unsigned long) logger->number_of_evaluations);
   }
   if (logger->index_file != NULL) {
+    /* SPPA */
     fprintf(logger->index_file, ":%lu|%.1e",
             (unsigned long) logger->number_of_evaluations,
-            logger->best_fvalue - logger->optimal_fvalue);
+            (logger->best_fvalue - logger->optimal_fvalue) / (fabs(logger->optimal_fvalue) < 1e-5 ? 1.0 : fabs(logger->optimal_fvalue)));
     fclose(logger->index_file);
     logger->index_file = NULL;
   }
