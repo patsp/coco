@@ -103,10 +103,11 @@ static void transform_vars_asymmetric_free(void *thing) {
  * @brief Creates the transformation.
  */
 static coco_problem_t *transform_vars_asymmetric(coco_problem_t *inner_problem, const double beta) {
-  
+#ifdef ENABLE_NON_LINEAR_TRANSFORMATIONS_ON_CONSTRAINTS
   size_t i;
   int is_feasible;
   double alpha, *cons_values;
+#endif
   transform_vars_asymmetric_data_t *data;
   coco_problem_t *problem;
   

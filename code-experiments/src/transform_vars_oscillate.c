@@ -112,10 +112,11 @@ static void transform_vars_oscillate_free(void *thing) {
  * @brief Creates the transformation.
  */
 static coco_problem_t *transform_vars_oscillate(coco_problem_t *inner_problem) {
-	
+#ifdef ENABLE_NON_LINEAR_TRANSFORMATIONS_ON_CONSTRAINTS
   size_t i;
   int is_feasible;
   double alpha, *cons_values;
+#endif
   transform_vars_oscillate_data_t *data;
   coco_problem_t *problem;
   data = (transform_vars_oscillate_data_t *) coco_allocate_memory(sizeof(*data));
