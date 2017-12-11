@@ -174,7 +174,8 @@ def caption_single():
         else:
             figure_caption = caption_part_one + caption_left_fixed_targets + caption_right
     elif testbedsettings.current_testbed.name in [testbedsettings.testbed_name_bi_ext,
-                                                  testbedsettings.testbed_name_cons]:
+                                                  testbedsettings.testbed_name_cons,
+                                                  testbedsettings.testbed_name_custom]: #SPPA
         # no best algorithm defined yet:
         figure_caption = caption_part_one + caption_left_fixed_targets + caption_right
     else:
@@ -517,9 +518,14 @@ def plotFVDistr(dsList, budget, min_f=None, **plotArgs):
     for ds in dsList:
         for i, fvals in enumerate(ds.funvals):
             if fvals[0] > budget * ds.dim:
-                assert i > 0, 'first entry ' + str(fvals[0]) + \
-                        'was smaller than maximal budget ' + str(budget * ds.dim)
-                fvals = ds.funvals[i - 1]
+                #SPPA
+                #assert i > 0, 'first entry ' + str(fvals[0]) + \
+                #        'was smaller than maximal budget ' + str(budget * ds.dim)
+                #fvals = ds.funvals[i - 1]
+                if i > 0:
+                    fvals = ds.funvals[i - 1]
+                else:
+                    fvals = ds.funvals[i]
                 break
         # vals = fvals[1:].copy() / target[i.funcId]
         vals = fvals[1:].copy()

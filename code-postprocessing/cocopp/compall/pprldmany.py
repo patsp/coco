@@ -414,7 +414,13 @@ def plot(dsList, targets=None, craftingeffort=0., **kwargs):
             runlengthunsucc = []
             evals = entry.detEvals([t])[0]
             runlengthsucc = evals[np.isnan(evals) == False] / divisor
+            #SPPA
+            if divisor > 1:
+                runlengthsucc = map(lambda x: max(x, 1), runlengthsucc)
             runlengthunsucc = entry.maxevals[np.isnan(evals)] / divisor
+            #SPPA
+            if divisor > 1:
+                runlengthunsucc = map(lambda x: max(x, 1), runlengthunsucc)
             if len(runlengthsucc) > 0:
                 x = toolsstats.drawSP(runlengthsucc, runlengthunsucc,
                                       percentiles=[50],
@@ -630,7 +636,13 @@ def main(dictAlg, order=None, outputdir='.', info='default',
                         evals = entry.detEvals([t])[0]
                         assert entry.dim == dim
                         runlengthsucc = evals[np.isnan(evals) == False] / divisor
+                        #SPPA
+                        if divisor > 1:
+                            runlengthsucc = map(lambda x: max(x, 1), runlengthsucc)
                         runlengthunsucc = entry.maxevals[np.isnan(evals)] / divisor
+                        #SPPA
+                        if divisor > 1:
+                            runlengthunsucc = map(lambda x: max(x, 1), runlengthunsucc)
                         if len(runlengthsucc) > 0:
                             x = toolsstats.drawSP(runlengthsucc, runlengthunsucc,
                                                   percentiles=[50],
@@ -669,7 +681,13 @@ def main(dictAlg, order=None, outputdir='.', info='default',
                             # set_trace()
                             assert dim == refalgentry.dim
                             runlengthsucc = evals[np.isnan(evals) == False] / divisor
+                            #SPPA
+                            if divisor > 1:
+                                runlengthsucc = map(lambda x: max(x, 1), runlengthsucc)
                             runlengthunsucc = refalgentry.maxevals[refalgevals[1][j]][np.isnan(evals)] / divisor
+                            #SPPA
+                            if divisor > 1:
+                                runlengthunsucc = map(lambda x: max(x, 1), runlengthunsucc)
                             x = toolsstats.drawSP(runlengthsucc, runlengthunsucc,
                                                   percentiles=[50],
                                                   samplesize=perfprofsamplesize)[1]

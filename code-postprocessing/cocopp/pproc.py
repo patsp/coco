@@ -1052,7 +1052,8 @@ class DataSet(object):
                     self.ert = self.ert[:i]
                 except AttributeError:
                     pass
-            assert self.evals.shape[0] == 1 or self.isBiobjective() or self.evals[-2][0] > self.precision
+            #SPPA
+            #assert self.evals.shape[0] == 1 or self.isBiobjective() or self.evals[-2][0] > self.precision
             if not self.isBiobjective() and self.evals[-1][0] < self.precision: 
                 self.evals[-1][0] = np.max((self.precision / 1.001, self.evals[-1, 0])) 
                 # warnings.warn('exact final precision was not recorded, next lower value set close to final precision')
@@ -1537,6 +1538,8 @@ class DataSet(object):
 
         """
         res = {}
+        #SPPA
+        self.computeERTfromEvals()
         tmparray = numpy.vstack((self.target, self.ert)).transpose()
         it = reversed(tmparray)
         # expect this array to be sorted by decreasing function values

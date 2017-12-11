@@ -559,7 +559,7 @@ def main(dsList, _valuesOfInterest, outputdir):
     fontSize = ppfig.getFontSize(funInfos.values())
     for func in dictFunc:
         plot(dictFunc[func], _valuesOfInterest, styles=styles)  # styles might have changed via config
-        beautify(axesLabel=False)
+        beautify(axesLabel=True) #SPPA
         
         # display number of instances in data and used targets type:
         display_text = '%d instances\n' % len(((dictFunc[func][0]).instancenumbers))
@@ -569,7 +569,7 @@ def main(dsList, _valuesOfInterest, outputdir):
                  verticalalignment="bottom")
 
         if func in testbedsettings.current_testbed.functions_with_legend:
-            toolsdivers.legend(loc="best")
+            toolsdivers.legend(loc="upper left") #SPPA
         if func in funInfos.keys():
             # print(plt.rcParams['axes.titlesize'])
             # print(plt.rcParams['font.size'])

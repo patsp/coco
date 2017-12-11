@@ -10,6 +10,8 @@ Scale up figures for two algorithms can be done with compall/ppfigs.py
 from __future__ import absolute_import
 
 import os
+#SPPA
+import math
 import matplotlib.pyplot as plt
 from pdb import set_trace
 try:
@@ -226,7 +228,9 @@ def annotate(entry0, entry1, dim, minfvalue=1e-8, nbtests=1):
         # the additional slicing [0:int(nbstars)] is due to
         # np.arange(1., 1. - 0.1 * nbstars, -0.1) not having the right number
         # of elements due to numerical error
-        ystars = [annotcoord[1]] * nbstars
+        #SPPA
+        #ystars = [annotcoord[1]] * nbstars
+        ystars = [int(math.floor(annotcoord[1]))] * int(nbstars)
 
         try:
             plt.plot(xstars, ystars, marker='*', ls='', color='w',
