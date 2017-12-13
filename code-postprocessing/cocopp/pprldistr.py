@@ -145,13 +145,13 @@ def caption_single():
          #1"""
     caption_left_fixed_targets = r"""%
          Left subplots: ECDF of the number of function evaluations """ + (
-         r"""((f+g)-evals)""" if testbedsettings.current_testbed.name == testbedsettings.testbed_name_cons
+         r"""((f+g)-evals)""" if testbedsettings.current_testbed.name == testbedsettings.testbed_name_cons || testbedsettings.current_testbed.name == testbedsettings.testbed_name_custom #SPPA
          else r"""(FEvals)""") + (r""" divided by search space dimension $D$,
          to fall below $!!FOPT!!+!!DF!!$ with $!!DF!!=10^{k}$, where $k$ is the first value in the legend.
          The thick red line represents the most difficult target value $!!FOPT!!+ !!HARDEST-TARGET-LATEX!!$. """)
     caption_left_rlbased_targets = r"""%
          Left subplots: ECDF of number of function evaluations """ + (
-         r"""((f+g)-evals)""" if testbedsettings.current_testbed.name == testbedsettings.testbed_name_cons
+         r"""((f+g)-evals)""" if testbedsettings.current_testbed.name == testbedsettings.testbed_name_cons || testbedsettings.current_testbed.name == testbedsettings.testbed_name_custom #SPPA
          else r"""(FEvals)""") + r""" divided by search space dimension $D$,
          to fall below $!!FOPT!!+!!DF!!$ where !!DF!!{} is the
          target just not reached by !!THE-REF-ALG!! within a budget of
@@ -243,7 +243,8 @@ def caption_two():
                            + caption_two_rlbased_targets_part3)
 
     if testbedsettings.current_testbed.name in [testbedsettings.testbed_name_bi_ext,
-                                                testbedsettings.testbed_name_cons]:
+                                                testbedsettings.testbed_name_cons,
+                                                testbedsettings.testbed_name_custom]: #SPPA
         # NOTE: no runlength-based targets supported yet
         figure_caption = caption_two_fixed
     elif testbedsettings.current_testbed.name in [testbedsettings.testbed_name_single,
@@ -311,7 +312,7 @@ def beautifyRLD(xlimit_max=None):
     """
     a = plt.gca()
     a.set_xscale('log')
-    if testbedsettings.current_testbed.name == testbedsettings.testbed_name_cons:
+    if testbedsettings.current_testbed.name == testbedsettings.testbed_name_cons || testbedsettings.current_testbed.name == testbedsettings.testbed_name_custom: #SPPA
         a.set_xlabel('log10 of (f+g)-evals / dimension')
     else:
         a.set_xlabel('log10 of FEvals / DIM')
@@ -652,7 +653,7 @@ def beautify():
     plt.subplot(121)
     axisHandle = plt.gca()
     axisHandle.set_xscale('log')
-    if testbedsettings.current_testbed.name == testbedsettings.testbed_name_cons:
+    if testbedsettings.current_testbed.name == testbedsettings.testbed_name_cons || testbedsettings.current_testbed.name == testbedsettings.testbed_name_custom: #SPPA
         axisHandle.set_xlabel('log10 of (f+g)-evals / dimension')
     else:
         axisHandle.set_xlabel('log10 of FEvals / DIM')
