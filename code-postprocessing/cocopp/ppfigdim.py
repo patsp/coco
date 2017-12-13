@@ -68,13 +68,13 @@ xlim_max = None
 ynormalize_by_dimension = True  # not at all tested yet
 
 styles = [  # sort of rainbow style, most difficult (red) first
-          {'color': 'r', 'marker': 'o', 'markeredgecolor': 'k', 'markeredgewidth': 2, 'linewidth': 4},
-          {'color': 'm', 'marker': '.', 'linewidth': 4},
-          {'color': 'y', 'marker': '^', 'markeredgecolor': 'k', 'markeredgewidth': 2, 'linewidth': 4},
-          {'color': 'g', 'marker': '.', 'linewidth': 4},
-          {'color': 'c', 'marker': 'v', 'markeredgecolor': 'k', 'markeredgewidth': 2, 'linewidth': 4},
-          {'color': 'b', 'marker': '.', 'linewidth': 4},
-          {'color': 'k', 'marker': 'o', 'markeredgecolor': 'k', 'markeredgewidth': 2, 'linewidth': 4},
+          {'color': 'r', 'marker': 'o', 'markeredgecolor': 'k', 'markeredgewidth': 1, 'linewidth': 2},
+          {'color': 'm', 'marker': '.', 'linewidth': 2},
+          {'color': 'y', 'marker': '^', 'markeredgecolor': 'k', 'markeredgewidth': 1, 'linewidth': 2},
+          {'color': 'g', 'marker': '.', 'linewidth': 2},
+          {'color': 'c', 'marker': 'v', 'markeredgecolor': 'k', 'markeredgewidth': 1, 'linewidth': 2},
+          {'color': 'b', 'marker': '.', 'linewidth': 2},
+          {'color': 'k', 'marker': 'o', 'markeredgecolor': 'k', 'markeredgewidth': 1, 'linewidth': 2},
         ] 
 
 refcolor = 'wheat'
@@ -144,6 +144,8 @@ def beautify(axesLabel=True):
     axisHandle.grid(False, which='minor')
     # axisHandle.xaxis.grid(True, linewidth=0, which='major')
     ymin, ymax = plt.ylim()
+    # SPPA
+    plt.tick_params(labelsize=15)
 
     values_of_interest = testbedsettings.current_testbed.ppfigdim_target_values
 
@@ -211,11 +213,11 @@ def beautify(axesLabel=True):
         if title.startswith('19 ') or title.startswith('20 '):
             plt.ylim(0.5, 1e4)
     if axesLabel:
-        plt.xlabel('Dimension')
+        plt.xlabel('Dimension', fontsize=15) #SPPA
         if ynormalize_by_dimension:
-            plt.ylabel('Run Lengths / Dimension')
+            plt.ylabel('Run Lengths / Dimension', fontsize=15) #SPPA
         else:
-            plt.ylabel('Run Lengths')
+            plt.ylabel('Run Lengths', fontsize=15) #SPPA
             
 
 def generateData(dataSet, targetFuncValue):
@@ -417,13 +419,15 @@ def plot(dsList, valuesOfInterest=None, styles=styles):
                 lw = styles[i_target].get('linewidth', None) 
                 styles[i_target]['linewidth'] = 0
                 res.extend(plt.plot(tmp[:, 0], tmp[:, 1] / tmp[:, 0]**ynormalize_by_dimension,
-                           markersize=20, clip_on=True, **styles[i_target]))
+                           markersize=10, clip_on=True, **styles[i_target])) #SPPA
                 # restore linewidth
                 if lw:
                     styles[i_target]['linewidth'] = lw
                 else:
                     del styles[i_target]['linewidth']
 
+        plt.rc('legend',fontsize=15) #SPPA
+        plt.rc('legend',markerscale=0.5) #SPPA
         # To have the legend displayed whatever happens with the data.
         for i in reversed(range(len(valuesOfInterest))):
             res.extend(plt.plot([], [], markersize=10,
@@ -556,7 +560,9 @@ def main(dsList, _valuesOfInterest, outputdir):
     ppfig.copy_js_files(outputdir)
     
     funInfos = ppfigparam.read_fun_infos()    
-    fontSize = ppfig.getFontSize(funInfos.values())
+    #fontSize = ppfig.getFontSize(funInfos.values())
+    #SPPA
+    fontSize = 15
     for func in dictFunc:
         plot(dictFunc[func], _valuesOfInterest, styles=styles)  # styles might have changed via config
         beautify(axesLabel=True) #SPPA
@@ -565,11 +571,11 @@ def main(dsList, _valuesOfInterest, outputdir):
         display_text = '%d instances\n' % len(((dictFunc[func][0]).instancenumbers))
         display_text += _valuesOfInterest.short_info
         plt.text(plt.xlim()[0], plt.ylim()[0],
-                 display_text, fontsize=14, horizontalalignment="left",
+                 display_text, fontsize=15, horizontalalignment="left", #SPPA
                  verticalalignment="bottom")
 
         if func in testbedsettings.current_testbed.functions_with_legend:
-            toolsdivers.legend(loc="upper left") #SPPA
+            toolsdivers.legend(loc="lower right") #SPPA
         if func in funInfos.keys():
             # print(plt.rcParams['axes.titlesize'])
             # print(plt.rcParams['font.size'])

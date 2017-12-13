@@ -54,8 +54,8 @@ save_zoom = False  # save zoom into left and right part of the figures
 perfprofsamplesize = genericsettings.simulated_runlength_bootstrap_sample_size  # number of bootstrap samples drawn for each fct+target in the performance profile
 nbperdecade = 1
 median_max_evals_marker_format = ['x', 24, 3]
-label_fontsize = 17
-title_fontsize = 20
+label_fontsize = 15 #SPPA
+title_fontsize = 15 #SPPA
 styles = [d.copy() for d in genericsettings.line_styles]  # deep copy
 
 refcolor = 'wheat'
@@ -166,6 +166,8 @@ def beautify():
     a.set_xscale('log')
     # Tick label handling
     plt.xlim(xmin=1e-0)
+    #SPPA
+    plt.tick_params(labelsize=15)
 
     global divide_by_dimension
     if divide_by_dimension:
@@ -327,8 +329,10 @@ def plotLegend(handles, maxval):
         lh = min(lh, len(show_algorithms))
     if lh <= 1:
         lh = 2
-    fontsize = genericsettings.minmax_algorithm_fontsize[0] + np.min((1, np.exp(9 - lh))) * (
-        genericsettings.minmax_algorithm_fontsize[-1] - genericsettings.minmax_algorithm_fontsize[0])
+    #fontsize = genericsettings.minmax_algorithm_fontsize[0] + np.min((1, np.exp(9 - lh))) * (
+    #    genericsettings.minmax_algorithm_fontsize[-1] - genericsettings.minmax_algorithm_fontsize[0])
+    #SPPA
+    fontsize = 15
     i = 0  # loop over the elements of ys
     for j in sorted(ys.keys()):
         for k in reversed(sorted(ys[j].keys())):
