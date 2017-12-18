@@ -277,10 +277,10 @@ class CONSBBOBTestbed(GECCOBBOBTestbed):
     """BBOB Testbed for constrained problems.
     """
 
-    min_target = 1e-6
-    min_target_latex = '-6'
-    min_target_exponent = -6.2
-    min_target_scatter = -6
+    min_target = 1e-8 #SPPA
+    min_target_latex = '-8' #SPPA
+    min_target_exponent = -8.2 #SPPA
+    min_target_scatter = -8 #SPPA
 
     shortinfo_filename = 'bbob-constrained-benchmarkshortinfos.txt'
     pptable_targetsOfInterest = (10, 1, 1e-1, 1e-2, 1e-3, 1e-5, min_target)  # for pptable and pptablemany
