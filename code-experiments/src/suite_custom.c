@@ -189,7 +189,7 @@ static double f_thomson_raw(const double *x,
       x2 = x[3 * i];
       y2 = x[3 * i + 1];
       z2 = x[3 * i + 2];
-      for (j = 0; j < i -1; ++j) {
+      for (j = 0; j < i; ++j) {
           x1 = x[3 * j];
           y1 = x[3 * j + 1];
           z1 = x[3 * j + 2];
@@ -199,7 +199,7 @@ static double f_thomson_raw(const double *x,
       }
   }
 
-  return -result;
+  return result;
 }
 
 /**
@@ -218,7 +218,8 @@ static void f_thomson_evaluate(coco_problem_t *problem,
  * without connections to any COCO structures.
  */
 static double f_thomson_constraint_raw(const double *x,
-                                       const size_t number_of_variables) {
+                                       const size_t number_of_variables,
+                                       const int k) {
 
     int i = 0;
     double result = 0.0;
@@ -232,16 +233,15 @@ static double f_thomson_constraint_raw(const double *x,
 
     const int num_points = number_of_variables / 3;
 
-    result = 0.0;
-    for (i = 0; i < num_points; ++i) {
-        x1 = x[3 * i];
-        y1 = x[3 * i + 1];
-        z1 = x[3 * i + 2];
-        cons = sqrt(x1 * x1 + y1 * y1 + z1 * z1) - 1;
-        result += cons * cons;
-    }
+    assert(0 <= k && k < num_points);
 
-    return result;
+    result = 0.0;
+    x1 = x[3 * k];
+    y1 = x[3 * k + 1];
+    z1 = x[3 * k + 2];
+    cons = sqrt(x1 * x1 + y1 * y1 + z1 * z1) - 1.0;
+
+    return cons;
 }
 
 /**
@@ -252,11 +252,18 @@ static double f_thomson_constraint_raw(const double *x,
  */
 static void f_thomson_evaluate_constraint(coco_problem_t *problem,
                                           const double *x, double *y) {
-    assert(problem->number_of_constraints == 2);
-    y[0] = f_thomson_constraint_raw(x,
-                                    problem->number_of_variables) - 1e-8;
-    y[1] = -f_thomson_constraint_raw(x,
-                                     problem->number_of_variables) - 1e-8;
+    int num_points = 0;
+    int i = 0;
+    double cons = 0.0;
+    assert(problem->number_of_constraints ==
+           2 * (problem->number_of_variables / 3));
+    num_points = problem->number_of_variables / 3;
+    for (i = 0; i < num_points; ++i) {
+        cons = f_thomson_constraint_raw(x,
+                                        problem->number_of_variables, i);
+        y[2 * i] = cons - 1e-8;
+        y[2 * i + 1] = -cons - 1e-8;
+    }
 }
 
 /**
@@ -264,9 +271,9 @@ static void f_thomson_evaluate_constraint(coco_problem_t *problem,
  */
 static coco_problem_t *f_thomson_allocate(const size_t number_of_variables) {
     int i = 0;
-    const size_t number_of_objectives = 1;
-    const size_t number_of_constraints = 2;
     const int num_points = number_of_variables / 3;
+    const size_t number_of_objectives = 1;
+    const size_t number_of_constraints = 2 * num_points;
     coco_problem_t *problem = coco_problem_allocate(number_of_variables,
                                                     number_of_objectives,
                                                     number_of_constraints);
@@ -339,9 +346,9 @@ static coco_problem_t *suite_custom_get_problem(coco_suite_t *suite,
     const size_t dimension = suite->dimensions[dimension_idx];
     const size_t instance = suite->instances[instance_idx];
 
-    if (obj_function_type(function) == 1) {
+    if (function == 1) {
         problem = f_kleeminty_allocate(dimension);
-    } else if (obj_function_type(function) == 2) {
+    } else if (function == 2) {
         problem = f_thomson_allocate(dimension);
     } else {
         coco_error("get_cons_bbob_problem(): cannot retrieve problem f%lu instance %lu in %luD",
@@ -362,3 +369,4 @@ static coco_problem_t *suite_custom_get_problem(coco_suite_t *suite,
 
     return problem;
 }
+
