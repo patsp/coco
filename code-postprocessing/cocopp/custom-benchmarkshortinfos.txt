@@ -1,1 +1,2 @@
 1 Klee-Minty cube
+2 Thomson problem

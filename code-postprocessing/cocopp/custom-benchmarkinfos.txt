@@ -1,1 +1,2 @@
 1 Klee-Minty cube optimization (posed as minimization) problem
+2 Thomson problem
