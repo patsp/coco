@@ -18,9 +18,15 @@ static coco_suite_t *suite_custom_initialize(void) {
 
     coco_suite_t *suite;
     const size_t dimensions[] = { 1, 2, 3, 4, 5, 6, 7,
-                                  8, 9, 10, 11, 12, 13, 14, 15 };
+                                  8, 9, 10, 11, 12, 13, 14, 15,
+                                  16, 17, 18, 19, 20, 21, 22, 23,
+                                  24, 25, 26, 27, 28, 29, 30, 31,
+                                  32, 33, 34, 35, 36, 37, 38, 39,
+                                  40, 41, 42, 43, 44, 45, 46, 47,
+                                  48, 49, 50, 51, 52, 53, 54, 55,
+                                  56, 57, 58, 59, 60 };
 
-    suite = coco_suite_allocate("custom", 2, 15, dimensions,
+    suite = coco_suite_allocate("custom", 2, 60, dimensions,
                                 "instances:1");
 
     return suite;
@@ -162,6 +168,16 @@ static coco_problem_t *f_kleeminty_allocate(const size_t number_of_variables) {
     return problem;
 }
 
+/*
+  The Thomson problem can be stated as
+  (see https://en.wikipedia.org/wiki/Thomson_problem):
+
+  Given M points, minimize sum_{1 <= i,j <= M with i<j} 1/r_{ij}
+  subject to the M points being on the unit sphere,
+  where r_{ij} = ||\mathrm{p}_i - \mathrm{p}_j|| and
+  \mathrm{p}_i is the i-th point.
+ */
+
 /**
  * @brief Implements the Thomson problem's objective function
  * (posed as minimization) without connections to any COCO structures.
@@ -287,10 +303,9 @@ static coco_problem_t *f_thomson_allocate(const size_t number_of_variables) {
     problem->evaluate_constraint = f_thomson_evaluate_constraint;
     problem->initial_solution = coco_allocate_vector(number_of_variables);
     for (i = 0; i < number_of_variables; ++i) {
-        problem->smallest_values_of_interest[i] = 0.0;
-        /* TODO: upper bound should be infinity,
-           use large value instead for now. */
-        problem->largest_values_of_interest[i] = 1e20;
+        /* TODO: should we use different bounds? */
+        problem->smallest_values_of_interest[i] = -1e3;
+        problem->largest_values_of_interest[i] = 1e3;
         problem->best_parameter[i] = 0.0;
         problem->initial_solution[i] = 0.0;
     }
@@ -312,8 +327,48 @@ static coco_problem_t *f_thomson_allocate(const size_t number_of_variables) {
         problem->initial_solution[3 * i + 2] = z;
     }
 
-    /* TODO: What best value should we set? */
-    problem->best_value[0] = -1e8;
+    /* The best known values are from: https://en.wikipedia.org/wiki/Thomson_problem#Configurations_of_smallest_known_energy */
+    if (num_points == 2) {
+        problem->best_value[0] = 0.500000000;
+    } else if (num_points == 3) {
+        problem->best_value[0] = 1.732050808;
+    } else if (num_points == 4) {
+        problem->best_value[0] = 3.674234614;
+    } else if (num_points == 5) {
+        problem->best_value[0] = 6.474691495;
+    } else if (num_points == 6) {
+        problem->best_value[0] = 9.985281374;
+    } else if (num_points == 7) {
+        problem->best_value[0] = 14.452977414;
+    } else if (num_points == 8) {
+        problem->best_value[0] = 19.675287861;
+    } else if (num_points == 9) {
+        problem->best_value[0] = 25.759986531;
+    } else if (num_points == 10) {
+        problem->best_value[0] = 32.716949460;
+    } else if (num_points == 11) {
+        problem->best_value[0] = 40.596450510;
+    } else if (num_points == 12) {
+        problem->best_value[0] = 49.165253058;
+    } else if (num_points == 13) {
+        problem->best_value[0] = 58.853230612;
+    } else if (num_points == 14) {
+        problem->best_value[0] = 69.306363297;
+    } else if (num_points == 15) {
+        problem->best_value[0] = 80.670244114;
+    } else if (num_points == 16) {
+        problem->best_value[0] = 92.911655302;
+    } else if (num_points == 17) {
+        problem->best_value[0] = 106.050404829;
+    } else if (num_points == 18) {
+        problem->best_value[0] = 120.084467447;
+    } else if (num_points == 19) {
+        problem->best_value[0] = 135.089467557;
+    } else if (num_points == 20) {
+        problem->best_value[0] = 150.881568334;
+    } else {
+        problem->best_value[0] = -1e8;
+    }
 
     /* double-check feasibility of initial solution */
     assert(coco_is_feasible(problem, problem->initial_solution, NULL));
