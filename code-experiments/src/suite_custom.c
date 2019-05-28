@@ -27,7 +27,7 @@ static coco_suite_t *suite_custom_initialize(void) {
                                   56, 57, 58, 59, 60 };
 
     suite = coco_suite_allocate("custom", 2, 60, dimensions,
-                                "instances:1");
+                                "instances:1-15");
 
     return suite;
 }
@@ -285,7 +285,9 @@ static void f_thomson_evaluate_constraint(coco_problem_t *problem,
 /**
  * @brief Allocates the Thomson problem.
  */
-static coco_problem_t *f_thomson_allocate(const size_t number_of_variables) {
+static coco_problem_t *f_thomson_allocate(const size_t number_of_variables,
+                                          const size_t function,
+                                          const size_t instance) {
     int i = 0;
     const int num_points = number_of_variables / 3;
     const size_t number_of_objectives = 1;
@@ -293,8 +295,8 @@ static coco_problem_t *f_thomson_allocate(const size_t number_of_variables) {
     coco_problem_t *problem = coco_problem_allocate(number_of_variables,
                                                     number_of_objectives,
                                                     number_of_constraints);
-    /* TODO: Which seed should we use? */
-    coco_random_state_t *random_generator = coco_random_new(1);
+    uint32_t rseed = (uint32_t)(function + 10000 * instance);
+    coco_random_state_t *random_generator = coco_random_new(rseed);
     double x = 0.0;
     double y = 0.0;
     double z = 0.0;
@@ -303,9 +305,9 @@ static coco_problem_t *f_thomson_allocate(const size_t number_of_variables) {
     problem->evaluate_constraint = f_thomson_evaluate_constraint;
     problem->initial_solution = coco_allocate_vector(number_of_variables);
     for (i = 0; i < number_of_variables; ++i) {
-        /* TODO: should we use different bounds? */
-        problem->smallest_values_of_interest[i] = -1e3;
-        problem->largest_values_of_interest[i] = 1e3;
+        /* Bounds are not relevant for this problem */
+        problem->smallest_values_of_interest[i] = -5.0;
+        problem->largest_values_of_interest[i] = 5.0;
         problem->best_parameter[i] = 0.0;
         problem->initial_solution[i] = 0.0;
     }
@@ -404,23 +406,27 @@ static coco_problem_t *suite_custom_get_problem(coco_suite_t *suite,
     if (function == 1) {
         problem = f_kleeminty_allocate(dimension);
     } else if (function == 2) {
-        problem = f_thomson_allocate(dimension);
+        problem = f_thomson_allocate(dimension, function, instance);
     } else {
-        coco_error("get_cons_bbob_problem(): cannot retrieve problem f%lu instance %lu in %luD",
+        coco_error("get_custom_problem(): "
+                   "cannot retrieve problem f%lu instance %lu in %luD",
                    function, instance, dimension);
         return NULL; /* Never reached */
     }
 
     problem->suite_dep_function = function;
     problem->suite_dep_instance = instance;
-    problem->suite_dep_index = coco_suite_encode_problem_index(suite, function_idx, dimension_idx, instance_idx);
+    problem->suite_dep_index =
+        coco_suite_encode_problem_index(suite, function_idx,
+                                        dimension_idx, instance_idx);
 
     /* Use the standard stacked problem_id as problem_name and
      * construct a new suite-specific problem_id
      */
     coco_problem_set_name(problem, problem->problem_id);
     coco_problem_set_id(problem, "custom_f%02lu_i%02lu_d%02lu",
-                        (unsigned long)function, (unsigned long)instance, (unsigned long)dimension);
+                        (unsigned long)function, (unsigned long)instance,
+                        (unsigned long)dimension);
 
     return problem;
 }
