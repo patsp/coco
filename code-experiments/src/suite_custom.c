@@ -26,7 +26,7 @@ static coco_suite_t *suite_custom_initialize(void) {
                                   48, 49, 50, 51, 52, 53, 54, 55,
                                   56, 57, 58, 59, 60 };
 
-    suite = coco_suite_allocate("custom", 2, 60, dimensions,
+    suite = coco_suite_allocate("custom", 3, 60, dimensions,
                                 "instances:1-15");
 
     return suite;
@@ -141,7 +141,7 @@ static void f_kleeminty_evaluate_constraint(coco_problem_t *problem,
  * @brief Allocates the Klee-Minty problem.
  */
 static coco_problem_t *f_kleeminty_allocate(const size_t number_of_variables) {
-    int i = 0;
+    size_t i = 0;
     const size_t number_of_objectives = 1;
     const size_t number_of_constraints = number_of_variables;
     double powerOf5 = 1.0;
@@ -198,11 +198,10 @@ static double f_thomson_raw(const double *x,
   double x2 = 0.0;
   double y2 = 0.0;
   double z2 = 0.0;
+  const size_t num_points = number_of_variables / 3;
 
   if (coco_vector_contains_nan(x, number_of_variables))
     return NAN;
-
-  const int num_points = number_of_variables / 3;
 
   result = 0.0;
   for (i = 1; i < num_points; ++i) {
@@ -239,9 +238,8 @@ static void f_thomson_evaluate(coco_problem_t *problem,
  */
 static double f_thomson_constraint_raw(const double *x,
                                        const size_t number_of_variables,
-                                       const int k) {
+                                       const size_t k) {
 
-    double result = 0.0;
     double x1 = 0.0;
     double y1 = 0.0;
     double z1 = 0.0;
@@ -252,7 +250,6 @@ static double f_thomson_constraint_raw(const double *x,
 
     assert(0 <= k && k < number_of_variables / 3);
 
-    result = 0.0;
     x1 = x[3 * k];
     y1 = x[3 * k + 1];
     z1 = x[3 * k + 2];
@@ -269,8 +266,8 @@ static double f_thomson_constraint_raw(const double *x,
  */
 static void f_thomson_evaluate_constraint(coco_problem_t *problem,
                                           const double *x, double *y) {
-    int num_points = 0;
-    int i = 0;
+    size_t num_points = 0;
+    size_t i = 0;
     double cons = 0.0;
     assert(problem->number_of_constraints ==
            2 * (problem->number_of_variables / 3));
@@ -289,8 +286,8 @@ static void f_thomson_evaluate_constraint(coco_problem_t *problem,
 static coco_problem_t *f_thomson_allocate(const size_t number_of_variables,
                                           const size_t function,
                                           const size_t instance) {
-    int i = 0;
-    const int num_points = number_of_variables / 3;
+    size_t i = 0;
+    const size_t num_points = number_of_variables / 3;
     const size_t number_of_objectives = 1;
     const size_t number_of_constraints = 2 * num_points;
     coco_problem_t *problem = coco_problem_allocate(number_of_variables,
@@ -383,6 +380,178 @@ static coco_problem_t *f_thomson_allocate(const size_t number_of_variables,
     return problem;
 }
 
+/*
+  A polygon optimization problem: Given a number of points,
+  the goal is to move the points in a way such that the area
+  of the polygon defined by the points is maximized
+  while keeping the circumference fixed to a given value.
+
+  More formally, the problem is stated as follows:
+  Given K points in \mathbb{R}^2, the area of the polygon
+  defined by K+1 nodes with the (K+1)-th node being
+  w.l.o.g. (0, 0)^T, the goal is to maximize the area
+
+  A(x) = (1/2) * \sum_{i=1}^{K-1}(x_i * x_{K+i+1} - x_{i+1} * x_{K+i})
+
+  such that
+
+  h(x) = \sqrt{x_1^2 + x_{K+1}^2} +
+         \sum_{i=1}^{K} \sqrt{(x_i - x{i+1})^2 + (x_{K+i} - x_{K+i+1})^2}
+         - L = 0.
+
+  The function h(x) defines the circumference constraint, where
+  L is the given circumference.
+
+  This implementation assumes that all the points are given
+  in one vector as follows:
+  x = (x_1, x_2, x_K, ..., y_1, y_2, ..., y_K)^T,
+  where here the (x_i, y_i)^T indicate coordinates in \mathbb{R}^2
+  and above the x_i indicate vector elements of this vector defined
+  here.
+
+  Additionally, this implementation poses the problem as a minimization
+  problem. The maximum area given the circumference can be computed,
+  since in the limit case of infinitely many points, one gets a circle.
+ */
+
+static const double polygon_L = 10.0; /* hard-coded required circumference */
+
+static double f_polygon_max_area(int num_points) {
+    return ((polygon_L * polygon_L) /
+            (4. * tan(coco_pi / (((double)num_points) + 1.0)))) *
+        (1.0 / (((double)num_points) + 1.0));
+}
+
+/**
+ * @brief Implements the polyon problem's objective function
+ * (posed as minimization) without connections to any COCO structures.
+ */
+static double f_polygon_raw(const double *x,
+                            const size_t number_of_variables) {
+
+  int i = 0;
+  double result = 0.0;
+  const int num_points = (int)(number_of_variables / 2);
+
+  if (coco_vector_contains_nan(x, number_of_variables))
+    return NAN;
+
+  result = 0.0;
+  for (i = 0; i < num_points - 1; ++i) {
+      result += x[i] * x[num_points + i + 1] - x[i + 1] * x[num_points + i];
+  }
+
+  return f_polygon_max_area(num_points) - 0.5 * result;
+}
+
+/**
+ * @brief Uses the raw function to evaluate the COCO problem.
+ */
+static void f_polygon_evaluate(coco_problem_t *problem,
+                                 const double *x, double *y) {
+  assert(problem->number_of_objectives == 1);
+  y[0] = f_polygon_raw(x, problem->number_of_variables);
+  assert(y[0] + 1e-13 >= problem->best_value[0]);
+}
+
+/**
+ * @brief Implements the polygon problem's constraint
+ * without connections to any COCO structures.
+ */
+static double f_polygon_constraint_raw(const double *x,
+                                       const size_t number_of_variables) {
+
+    double result = 0.0;
+    int i = 0;
+    const int num_points = (int)(number_of_variables / 2);
+
+    if (coco_vector_contains_nan(x, number_of_variables))
+        return NAN;
+
+    result += sqrt(x[0] * x[0] + x[num_points] * x[num_points]);
+    result += sqrt(x[num_points - 1] * x[num_points - 1] +
+                   x[2 * num_points - 1] * x[2 * num_points - 1]);
+    for (i = 0; i < num_points - 1; ++i) {
+        result += sqrt((x[i] - x[i + 1]) * (x[i] - x[i + 1]) +
+                       (x[num_points + i] - x[num_points + i + 1]) *
+                       (x[num_points + i] - x[num_points + i + 1]));
+    }
+
+    return result - polygon_L;
+}
+
+/**
+ * @brief Uses the raw function to evaluate the COCO problem.
+ * Since the COCO framework deals with inequality constraints,
+ * we use a hard-coded epsilon of 1e-8 for the equality
+ * constraint threshold.
+ */
+static void f_polygon_evaluate_constraint(coco_problem_t *problem,
+                                          const double *x, double *y) {
+    double cons = 0.0;
+    assert(problem->number_of_constraints == 2);
+    cons = f_polygon_constraint_raw(x, problem->number_of_variables);
+    y[0] = cons - 1e-8;
+    y[1] = -cons - 1e-8;
+}
+
+/**
+ * @brief Allocates the Thomson problem.
+ */
+static coco_problem_t *f_polygon_allocate(const size_t number_of_variables,
+                                          const size_t function,
+                                          const size_t instance) {
+    int i = 0;
+    int idx = 0;
+    const int num_points = (int)(number_of_variables / 2);
+    const size_t number_of_objectives = 1;
+    const size_t number_of_constraints = 2;
+    coco_problem_t *problem = coco_problem_allocate(number_of_variables,
+                                                    number_of_objectives,
+                                                    number_of_constraints);
+    uint32_t rseed = (uint32_t)(function + 10000 * instance);
+    coco_random_state_t *random_generator = coco_random_new(rseed);
+    double x = 0.0;
+    problem->evaluate_function = f_polygon_evaluate;
+    problem->evaluate_constraint = f_polygon_evaluate_constraint;
+    problem->initial_solution = coco_allocate_vector(number_of_variables);
+    for (i = 0; i < number_of_variables; ++i) {
+        /* Bounds are not relevant for this problem */
+        problem->smallest_values_of_interest[i] = -5.0;
+        problem->largest_values_of_interest[i] = 5.0;
+        problem->best_parameter[i] = 0.0;
+        problem->initial_solution[i] = 0.0;
+    }
+    /* Provide an initial feasible solution.
+       A trivial solution is constructed. All points
+       except one with a random index are put to (0, 0)^T.
+       The remaining one is put to (0, polygon_L / 2)^T.
+    */
+    x = coco_random_uniform(random_generator);
+    idx = (int)(floor(x * num_points));
+    assert(0 <= idx && idx < num_points);
+    for (i = 0; i < num_points; ++i) {
+        if (i != idx) {
+            problem->initial_solution[i] = 0.0;
+            problem->initial_solution[num_points + i] = 0.0;
+        } else {
+            problem->initial_solution[i] = 0.0;
+            problem->initial_solution[num_points + i] = polygon_L / 2.0;
+        }
+    }
+
+    problem->best_value[0] = 0.0;
+
+    /* double-check feasibility of initial solution */
+    assert(coco_is_feasible(problem, problem->initial_solution, NULL));
+
+    coco_problem_set_id(problem, "polygon");
+
+    coco_random_free(random_generator);
+
+    return problem;
+}
+
 /**
  * @brief Returns the problem from the custom suite that
  *        corresponds to the given parameters.
@@ -408,6 +577,8 @@ static coco_problem_t *suite_custom_get_problem(coco_suite_t *suite,
         problem = f_kleeminty_allocate(dimension);
     } else if (function == 2) {
         problem = f_thomson_allocate(dimension, function, instance);
+    } else if (function == 3) {
+        problem = f_polygon_allocate(dimension, function, instance);
     } else {
         coco_error("get_custom_problem(): "
                    "cannot retrieve problem f%lu instance %lu in %luD",
