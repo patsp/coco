@@ -176,6 +176,10 @@ static coco_problem_t *f_kleeminty_allocate(const size_t number_of_variables) {
   subject to the M points being on the unit sphere,
   where r_{ij} = ||\mathrm{p}_i - \mathrm{p}_j|| and
   \mathrm{p}_i is the i-th point.
+
+  This implementation assumes that all the points are given
+  in one vector as follows:
+  x = (x_1, y_1, z_1, x_2, y_2, z_2, ..., x_M, y_M, z_M)^T.
  */
 
 /**
@@ -237,7 +241,6 @@ static double f_thomson_constraint_raw(const double *x,
                                        const size_t number_of_variables,
                                        const int k) {
 
-    int i = 0;
     double result = 0.0;
     double x1 = 0.0;
     double y1 = 0.0;
@@ -247,9 +250,7 @@ static double f_thomson_constraint_raw(const double *x,
     if (coco_vector_contains_nan(x, number_of_variables))
         return NAN;
 
-    const int num_points = number_of_variables / 3;
-
-    assert(0 <= k && k < num_points);
+    assert(0 <= k && k < number_of_variables / 3);
 
     result = 0.0;
     x1 = x[3 * k];
