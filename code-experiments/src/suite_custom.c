@@ -26,7 +26,7 @@ static coco_suite_t *suite_custom_initialize(void) {
                                   48, 49, 50, 51, 52, 53, 54, 55,
                                   56, 57, 58, 59, 60 };
 
-    suite = coco_suite_allocate("custom", 3, 60, dimensions,
+    suite = coco_suite_allocate("custom", 4, 60, dimensions,
                                 "instances:1-15");
 
     return suite;
@@ -423,7 +423,7 @@ static double f_polygon_max_area(int num_points) {
 }
 
 /**
- * @brief Implements the polyon problem's objective function
+ * @brief Implements the polygon problem's objective function
  * (posed as minimization) without connections to any COCO structures.
  */
 static double f_polygon_raw(const double *x,
@@ -496,7 +496,7 @@ static void f_polygon_evaluate_constraint(coco_problem_t *problem,
 }
 
 /**
- * @brief Allocates the Thomson problem.
+ * @brief Allocates the polygon problem.
  */
 static coco_problem_t *f_polygon_allocate(const size_t number_of_variables,
                                           const size_t function,
@@ -553,6 +553,102 @@ static coco_problem_t *f_polygon_allocate(const size_t number_of_variables,
 }
 
 /**
+ * @brief Implements the unconstrained polygon problem's objective function
+ * (posed as minimization) without connections to any COCO structures.
+ */
+static double f_polygonunconstrained_raw(const double *x,
+                                         const size_t number_of_variables) {
+
+  int i = 0;
+  double result = 0.0;
+  const int num_points = (int)(number_of_variables / 2);
+  const double constraint_violation =
+      f_polygon_constraint_raw(x, number_of_variables);
+  double *x_tmp = NULL;
+
+  if (coco_vector_contains_nan(x, number_of_variables))
+    return NAN;
+
+  x_tmp = coco_duplicate_vector(x, number_of_variables);
+  for (i = 0; i < number_of_variables; ++i) {
+      x_tmp[i] = (x[i] / (constraint_violation + polygon_L)) * polygon_L;
+  }
+  result = 0.0;
+  for (i = 0; i < num_points - 1; ++i) {
+      result += x_tmp[i] * x_tmp[num_points + i + 1] -
+          x_tmp[i + 1] * x_tmp[num_points + i];
+  }
+  coco_free_memory(x_tmp);
+
+  return f_polygon_max_area(num_points) - 0.5 * result;
+}
+
+/**
+ * @brief Uses the raw function to evaluate the COCO problem.
+ */
+static void f_polygonunconstrained_evaluate(coco_problem_t *problem,
+                                            const double *x, double *y) {
+  assert(problem->number_of_objectives == 1);
+  y[0] = f_polygonunconstrained_raw(x, problem->number_of_variables);
+  assert(y[0] + 1e-13 >= problem->best_value[0]);
+}
+
+/**
+ * @brief Allocates the unconstrained polygon problem.
+ */
+static coco_problem_t *f_polygonunconstrained_allocate(const size_t
+                                                       number_of_variables,
+                                                       const size_t function,
+                                                       const size_t instance) {
+    int i = 0;
+    int idx = 0;
+    const int num_points = (int)(number_of_variables / 2);
+    const size_t number_of_objectives = 1;
+    const size_t number_of_constraints = 0;
+    coco_problem_t *problem = coco_problem_allocate(number_of_variables,
+                                                    number_of_objectives,
+                                                    number_of_constraints);
+    uint32_t rseed = (uint32_t)(function + 10000 * instance);
+    coco_random_state_t *random_generator = coco_random_new(rseed);
+    double x = 0.0;
+    problem->evaluate_function = f_polygonunconstrained_evaluate;
+    problem->evaluate_constraint = NULL;
+    problem->initial_solution = coco_allocate_vector(number_of_variables);
+    for (i = 0; i < number_of_variables; ++i) {
+        /* Bounds are not relevant for this problem */
+        problem->smallest_values_of_interest[i] = -5.0;
+        problem->largest_values_of_interest[i] = 5.0;
+        problem->best_parameter[i] = 0.0;
+        problem->initial_solution[i] = 0.0;
+    }
+    /* Provide an initial feasible solution.
+       A trivial solution is constructed. All points
+       except one with a random index are put to (0, 0)^T.
+       The remaining one is put to (0, polygon_L / 2)^T.
+    */
+    x = coco_random_uniform(random_generator);
+    idx = (int)(floor(x * num_points));
+    assert(0 <= idx && idx < num_points);
+    for (i = 0; i < num_points; ++i) {
+        if (i != idx) {
+            problem->initial_solution[i] = 0.0;
+            problem->initial_solution[num_points + i] = 0.0;
+        } else {
+            problem->initial_solution[i] = 0.0;
+            problem->initial_solution[num_points + i] = polygon_L / 2.0;
+        }
+    }
+
+    problem->best_value[0] = 0.0;
+
+    coco_problem_set_id(problem, "polygonunconstrained");
+
+    coco_random_free(random_generator);
+
+    return problem;
+}
+
+/**
  * @brief Returns the problem from the custom suite that
  *        corresponds to the given parameters.
  *
@@ -579,6 +675,9 @@ static coco_problem_t *suite_custom_get_problem(coco_suite_t *suite,
         problem = f_thomson_allocate(dimension, function, instance);
     } else if (function == 3) {
         problem = f_polygon_allocate(dimension, function, instance);
+    } else if (function == 4) {
+        problem = f_polygonunconstrained_allocate(dimension, function,
+                                                  instance);
     } else {
         coco_error("get_custom_problem(): "
                    "cannot retrieve problem f%lu instance %lu in %luD",

@@ -1,3 +1,4 @@
 1 Klee-Minty cube optimization (posed as minimization) problem
 2 Thomson problem
 3 Polygon problem
+4 Unconstrained polygon problem
