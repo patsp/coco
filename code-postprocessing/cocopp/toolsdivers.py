@@ -333,17 +333,18 @@ def get_version_label(algorithmID=None):
         the string. If more than one reference value is present in the data,
         the string displays also a warning.
     """
-    coco_version = pkg_resources.require('cocopp')[0].version
-    reference_values = testbedsettings.get_reference_values(algorithmID)
+    # coco_version = pkg_resources.require('cocopp')[0].version
+    # reference_values = testbedsettings.get_reference_values(algorithmID)
     
-    if reference_values and type(reference_values) is set:        
-        label = "v%s, hv-hashes inconsistent:" % (coco_version)
-        for r in reference_values:
-            label = label + " %s and" % (r)
-        label = label[:-3] + "found!"
-    else:
-        label = "v%s" % (coco_version) if reference_values is None else "v%s, hv-hash=%s" % (coco_version, reference_values)      
-    return label
+    # if reference_values and type(reference_values) is set:        
+    #     label = "v%s, hv-hashes inconsistent:" % (coco_version)
+    #     for r in reference_values:
+    #         label = label + " %s and" % (r)
+    #     label = label[:-3] + "found!"
+    # else:
+    #     label = "v%s" % (coco_version) if reference_values is None else "v%s, hv-hash=%s" % (coco_version, reference_values)      
+    # return label
+    return "version sppa"
 
 
 def path_in_package(sub_path=""):
