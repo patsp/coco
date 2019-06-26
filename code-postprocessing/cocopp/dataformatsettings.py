@@ -62,9 +62,13 @@ class BBOBNewDataFormat(DataFormat):
                                                             self.evaluation_idx,
                                                             self.function_value_idx)
         assert all(dataset.evals_function[0][1:] == 1)
+        #SPPA: Hack: the HMultiReader does not take the passed
+        # self.evaluation_constraints_idx into account
+        self.evaluation_idx = self.evaluation_constraints_idx
         dataset.evals_constraints, maxevals_cons, finalfunvals_cons = aligner(data,
                 self.evaluation_constraints_idx,
                 self.function_value_idx, rewind_reader=True)
+        self.evaluation_idx = 0
 
         assert all(finalfunvals == finalfunvals_cons)  # evals are different
         assert len(dataset.evals_function) >= len(dataset.evals_constraints)  # can't be > !?
