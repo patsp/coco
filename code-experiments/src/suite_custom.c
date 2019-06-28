@@ -371,6 +371,34 @@ static coco_problem_t *f_thomson_allocate(const size_t number_of_variables,
         problem->best_value[0] = 135.089467557;
     } else if (num_points == 20) {
         problem->best_value[0] = 150.881568334;
+    } else if (num_points == 21) {
+        problem->best_value[0] = 167.641622399;
+    } else if (num_points == 22) {
+        problem->best_value[0] = 185.287536149;
+    } else if (num_points == 23) {
+        problem->best_value[0] = 203.930190663;
+    } else if (num_points == 24) {
+        problem->best_value[0] = 223.347074052;
+    } else if (num_points == 25) {
+        problem->best_value[0] = 243.812760299;
+    } else if (num_points == 26) {
+        problem->best_value[0] = 265.133326317;
+    } else if (num_points == 27) {
+        problem->best_value[0] = 287.302615033;
+    } else if (num_points == 28) {
+        problem->best_value[0] = 310.491542358;
+    } else if (num_points == 29) {
+        problem->best_value[0] = 334.634439920;
+    } else if (num_points == 30) {
+        problem->best_value[0] = 359.603945904;
+    } else if (num_points == 31) {
+        problem->best_value[0] = 385.530838063;
+    } else if (num_points == 32) {
+        problem->best_value[0] = 412.261274651;
+    } else if (num_points == 33) {
+        problem->best_value[0] = 440.204057448;
+    } else if (num_points == 34) {
+        problem->best_value[0] = 468.904853281;
     } else {
         problem->best_value[0] = -1e8;
     }
