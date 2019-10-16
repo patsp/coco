@@ -5,6 +5,8 @@
 
 #include "coco.h"
 
+#include "cec2006_functions.c"
+
 static coco_suite_t *coco_suite_allocate(const char *suite_name,
                                          const size_t number_of_functions,
                                          const size_t number_of_dimensions,
@@ -31,7 +33,7 @@ static coco_suite_t *suite_custom_initialize(void) {
                                   88, 89, 90, 91, 92, 93, 94, 95,
                                   96, 97, 98, 99, 100 };
 
-    suite = coco_suite_allocate("custom", 4, 100, dimensions,
+    suite = coco_suite_allocate("custom", 8, 100, dimensions,
                                 "instances:1-15");
 
     return suite;
@@ -681,6 +683,167 @@ static coco_problem_t *f_polygonunconstrained_allocate(const size_t
     return problem;
 }
 
+/* CEC 2006 */
+
+typedef void (*cec2006_eval_fun_t)(double *x, double *f, double *g,
+                                   double *h, int nx, int nf, int ng, int nh);
+
+static cec2006_eval_fun_t get_cec2006_eval_fun(coco_problem_t *problem) {
+    cec2006_eval_fun_t f = NULL;
+    if (5 == problem->suite_dep_function) {
+        f = cec2006_g03;
+    } else if (6 == problem->suite_dep_function) {
+        f = cec2006_g11;
+    } else if (7 == problem->suite_dep_function) {
+        f = cec2006_g13;
+    } else if (8 == problem->suite_dep_function) {
+        f = cec2006_g17;
+    } else {
+        assert(0);
+    }
+    return f;
+}
+
+static size_t
+cec2006_get_num_equalityconstraints(const size_t function_index) {
+    size_t num_equality_constraints = 0;
+    if (5 == function_index) {
+        num_equality_constraints = 1;
+    } else if (6 == function_index) {
+            num_equality_constraints = 1;
+    } else if (7 == function_index) {
+        num_equality_constraints = 3;
+    } else if (8 == function_index) {
+        num_equality_constraints = 4;
+    } else {
+        assert(0);
+    }
+    return num_equality_constraints;
+}
+
+static double cec2006_get_best_value(size_t function_index) {
+    double best_value = 0.0;
+    if (5 == function_index) {
+        best_value = -1.0;
+    } else if (6 == function_index) {
+        best_value = 0.75;
+    } else if (7 == function_index) {
+        best_value = 0.0539498477624;
+    } else if (8 == function_index) {
+        best_value = 8853.53989187099;
+    } else {
+        assert(0);
+    }
+    return best_value;
+}
+
+/**
+ * @brief Evaluates a CEC2006 problem's objective and
+ * equality constraint function.
+ */
+static void f_cec2006_evaluate_helper(coco_problem_t *problem,
+                                      const double *x,
+                                      double *f, double *h) {
+    cec2006_eval_fun_t eval_fun = get_cec2006_eval_fun(problem);
+    assert(eval_fun != NULL);
+
+    assert(x != NULL);
+    assert(f != NULL);
+    assert(h != NULL);
+
+    eval_fun((double *)x, f, NULL, h,
+             (int)problem->number_of_variables,
+             (int)problem->number_of_objectives,
+             0,
+             (int)problem->number_of_constraints);
+}
+
+/**
+ * @brief Evaluates a CEC2006 problem's objective function.
+ */
+static void f_cec2006_evaluate(coco_problem_t *problem,
+                               const double *x, double *y) {
+    double *h_tmp = NULL;
+
+    assert(problem->number_of_objectives == 1);
+    /* problem->number_of_constraints contains 2 * "number
+       of equality constraints" */
+    h_tmp = coco_allocate_vector(problem->number_of_constraints / 2);
+    assert(h_tmp != NULL);
+    f_cec2006_evaluate_helper(problem, x, y, h_tmp);
+    coco_free_memory(h_tmp);
+    assert(y[0] + 1e-13 >= problem->best_value[0]);
+}
+
+/**
+ * @brief Evaluates a CEC2006 problem's equality constraint function.
+ * Since the COCO framework deals with inequality constraints,
+ * we use a hard-coded epsilon of 1e-8 for the equality
+ * constraint threshold.
+ */
+static void f_cec2006_evaluate_constraint(coco_problem_t *problem,
+                                          const double *x, double *y) {
+    size_t i = 0;
+    double f_tmp = 0.0;
+    double *h_tmp = NULL;
+
+    assert(problem->number_of_objectives == 1);
+
+    /* problem->number_of_constraints contains 2 * "number
+       of equality constraints" */
+    h_tmp = coco_allocate_vector(problem->number_of_constraints / 2);
+    assert(h_tmp != NULL);
+
+    f_cec2006_evaluate_helper(problem, x, &f_tmp, h_tmp);
+
+    for (i = 0; i < problem->number_of_constraints / 2; ++i) {
+        y[2 * i] = h_tmp[i] - 1e-8;
+        y[2 * i + 1] = -h_tmp[i] - 1e-8;
+    }
+
+    coco_free_memory(h_tmp);
+}
+
+/**
+ * @brief Allocates a CEC 2006 problem.
+ */
+static coco_problem_t *f_cec2006_allocate(const size_t number_of_variables,
+                                          const size_t function,
+                                          const size_t instance) {
+    size_t i = 0;
+    const size_t number_of_objectives = 1;
+    const size_t number_of_constraints =
+        2 * cec2006_get_num_equalityconstraints(function);
+    coco_problem_t *problem = coco_problem_allocate(number_of_variables,
+                                                    number_of_objectives,
+                                                    number_of_constraints);
+    uint32_t rseed = (uint32_t)(function + 10000 * instance);
+    coco_random_state_t *random_generator = coco_random_new(rseed);
+    problem->evaluate_function = f_cec2006_evaluate;
+    problem->evaluate_constraint = f_cec2006_evaluate_constraint;
+    problem->initial_solution = coco_allocate_vector(number_of_variables);
+    for (i = 0; i < number_of_variables; ++i) {
+        /* TODO: Are the bounds relevant? */
+        problem->smallest_values_of_interest[i] = -100.0;
+        problem->largest_values_of_interest[i] = 100.0;
+        /* TODO: Is the best_parameter important to set? */
+        problem->best_parameter[i] = 0.0;
+        /* TODO: Can we provide a feasible initial solution?
+           Just provide zeros vector for now. */
+        problem->initial_solution[i] = 0.0;
+    }
+    /* double-check feasibility of initial solution */
+    /* assert(coco_is_feasible(problem, problem->initial_solution, NULL)); */
+
+    problem->best_value[0] = cec2006_get_best_value(function);
+
+    coco_problem_set_id(problem, "CEC2006");
+
+    coco_random_free(random_generator);
+
+    return problem;
+}
+
 /**
  * @brief Returns the problem from the custom suite that
  *        corresponds to the given parameters.
@@ -711,6 +874,8 @@ static coco_problem_t *suite_custom_get_problem(coco_suite_t *suite,
     } else if (function == 4) {
         problem = f_polygonunconstrained_allocate(dimension, function,
                                                   instance);
+    } else if (5 <= function && function <= 8) {
+        problem = f_cec2006_allocate(dimension, function, instance);
     } else {
         coco_error("get_custom_problem(): "
                    "cannot retrieve problem f%lu instance %lu in %luD",
