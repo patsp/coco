@@ -737,6 +737,54 @@ static double cec2006_get_best_value(size_t function_index) {
     return best_value;
 }
 
+static void initialize_cec2006_bounds(size_t function_index,
+                                      double *smallest_values_of_interest,
+                                      double *largest_values_of_interest,
+                                      size_t number_of_variables) {
+    int i = 0;
+    if (5 == function_index) {
+        assert(10 == number_of_variables);
+        for (i = 0; i < number_of_variables; ++i) {
+            smallest_values_of_interest[i] = 0.0;
+            largest_values_of_interest[i] = 1.0;
+        }
+    } else if (6 == function_index) {
+        assert(2 == number_of_variables);
+        for (i = 0; i < number_of_variables; ++i) {
+            smallest_values_of_interest[i] = -1.0;
+            largest_values_of_interest[i] = 1.0;
+        }
+    } else if (7 == function_index) {
+        assert(5 == number_of_variables);
+        smallest_values_of_interest[0] = -2.3;
+        largest_values_of_interest[0] = 2.3;
+        smallest_values_of_interest[1] = -2.3;
+        largest_values_of_interest[1] = 2.3;
+        smallest_values_of_interest[2] = -3.2;
+        largest_values_of_interest[2] = 3.2;
+        smallest_values_of_interest[3] = -3.2;
+        largest_values_of_interest[3] = 3.2;
+        smallest_values_of_interest[4] = -3.2;
+        largest_values_of_interest[4] = 3.2;
+    } else if (8 == function_index) {
+        assert(6 == number_of_variables);
+        smallest_values_of_interest[0] = 0.0;
+        largest_values_of_interest[0] = 400.0;
+        smallest_values_of_interest[1] = 0.0;
+        largest_values_of_interest[1] = 1000.0;
+        smallest_values_of_interest[2] = 340.0;
+        largest_values_of_interest[2] = 420.0;
+        smallest_values_of_interest[3] = 340.0;
+        largest_values_of_interest[3] = 420.0;
+        smallest_values_of_interest[4] = -1000.0;
+        largest_values_of_interest[4] = 1000.0;
+        smallest_values_of_interest[5] = 0.0;
+        largest_values_of_interest[5] = 0.5236;
+    } else {
+        assert(0);
+    }
+}
+
 /**
  * @brief Evaluates a CEC2006 problem's objective and
  * equality constraint function.
@@ -823,9 +871,8 @@ static coco_problem_t *f_cec2006_allocate(const size_t number_of_variables,
     problem->evaluate_constraint = f_cec2006_evaluate_constraint;
     problem->initial_solution = coco_allocate_vector(number_of_variables);
     for (i = 0; i < number_of_variables; ++i) {
-        /* TODO: Are the bounds relevant? */
-        problem->smallest_values_of_interest[i] = -100.0;
-        problem->largest_values_of_interest[i] = 100.0;
+        problem->smallest_values_of_interest[i] = 0.0;
+        problem->largest_values_of_interest[i] = 0.0;
         /* TODO: Is the best_parameter important to set? */
         problem->best_parameter[i] = 0.0;
         /* TODO: Can we provide a feasible initial solution?
@@ -834,6 +881,11 @@ static coco_problem_t *f_cec2006_allocate(const size_t number_of_variables,
     }
     /* double-check feasibility of initial solution */
     /* assert(coco_is_feasible(problem, problem->initial_solution, NULL)); */
+
+    initialize_cec2006_bounds(function,
+                              problem->smallest_values_of_interest,
+                              problem->largest_values_of_interest,
+                              number_of_variables);
 
     problem->best_value[0] = cec2006_get_best_value(function);
 
