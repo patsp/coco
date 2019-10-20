@@ -743,43 +743,47 @@ static void initialize_cec2006_bounds(size_t function_index,
                                       size_t number_of_variables) {
     int i = 0;
     if (5 == function_index) {
-        assert(10 == number_of_variables);
-        for (i = 0; i < number_of_variables; ++i) {
-            smallest_values_of_interest[i] = 0.0;
-            largest_values_of_interest[i] = 1.0;
+        if (10 == number_of_variables) {
+            for (i = 0; i < number_of_variables; ++i) {
+                smallest_values_of_interest[i] = 0.0;
+                largest_values_of_interest[i] = 1.0;
+            }
         }
     } else if (6 == function_index) {
-        assert(2 == number_of_variables);
-        for (i = 0; i < number_of_variables; ++i) {
-            smallest_values_of_interest[i] = -1.0;
-            largest_values_of_interest[i] = 1.0;
+        if (2 == number_of_variables) {
+            for (i = 0; i < number_of_variables; ++i) {
+                smallest_values_of_interest[i] = -1.0;
+                largest_values_of_interest[i] = 1.0;
+            }
         }
     } else if (7 == function_index) {
-        assert(5 == number_of_variables);
-        smallest_values_of_interest[0] = -2.3;
-        largest_values_of_interest[0] = 2.3;
-        smallest_values_of_interest[1] = -2.3;
-        largest_values_of_interest[1] = 2.3;
-        smallest_values_of_interest[2] = -3.2;
-        largest_values_of_interest[2] = 3.2;
-        smallest_values_of_interest[3] = -3.2;
-        largest_values_of_interest[3] = 3.2;
-        smallest_values_of_interest[4] = -3.2;
-        largest_values_of_interest[4] = 3.2;
+        if (5 == number_of_variables) {
+            smallest_values_of_interest[0] = -2.3;
+            largest_values_of_interest[0] = 2.3;
+            smallest_values_of_interest[1] = -2.3;
+            largest_values_of_interest[1] = 2.3;
+            smallest_values_of_interest[2] = -3.2;
+            largest_values_of_interest[2] = 3.2;
+            smallest_values_of_interest[3] = -3.2;
+            largest_values_of_interest[3] = 3.2;
+            smallest_values_of_interest[4] = -3.2;
+            largest_values_of_interest[4] = 3.2;
+        }
     } else if (8 == function_index) {
-        assert(6 == number_of_variables);
-        smallest_values_of_interest[0] = 0.0;
-        largest_values_of_interest[0] = 400.0;
-        smallest_values_of_interest[1] = 0.0;
-        largest_values_of_interest[1] = 1000.0;
-        smallest_values_of_interest[2] = 340.0;
-        largest_values_of_interest[2] = 420.0;
-        smallest_values_of_interest[3] = 340.0;
-        largest_values_of_interest[3] = 420.0;
-        smallest_values_of_interest[4] = -1000.0;
-        largest_values_of_interest[4] = 1000.0;
-        smallest_values_of_interest[5] = 0.0;
-        largest_values_of_interest[5] = 0.5236;
+        if (6 == number_of_variables) {
+            smallest_values_of_interest[0] = 0.0;
+            largest_values_of_interest[0] = 400.0;
+            smallest_values_of_interest[1] = 0.0;
+            largest_values_of_interest[1] = 1000.0;
+            smallest_values_of_interest[2] = 340.0;
+            largest_values_of_interest[2] = 420.0;
+            smallest_values_of_interest[3] = 340.0;
+            largest_values_of_interest[3] = 420.0;
+            smallest_values_of_interest[4] = -1000.0;
+            largest_values_of_interest[4] = 1000.0;
+            smallest_values_of_interest[5] = 0.0;
+            largest_values_of_interest[5] = 0.5236;
+        }
     } else {
         assert(0);
     }
