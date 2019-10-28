@@ -2,3 +2,7 @@
 2 Thomson problem
 3 Polygon problem
 4 Unconstrained polygon problem
+5 CEC 2006 g03
+6 CEC 2006 g11
+7 CEC 2006 g13
+8 CEC 2006 g17
