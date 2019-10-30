@@ -393,6 +393,10 @@ cec2006_g17 (double *x, double *f, double *g, double *h, int nx, int nf, int ng,
 	{
 	  f1 = 31.0 * aux1;
 	}
+      else
+          {
+              f1 = 1e8;
+          }
     }
   if (x2 >= 0.0 && x2 < 100.0)
     {
@@ -410,6 +414,10 @@ cec2006_g17 (double *x, double *f, double *g, double *h, int nx, int nf, int ng,
 	    {
 	      f2 = 30.0 * aux2;
 	    }
+      else
+          {
+              f2 = 1e8;
+          }
 	}
     }
   f[0] = f1 + f2;
