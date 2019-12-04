@@ -33,7 +33,7 @@ static coco_suite_t *suite_custom_initialize(void) {
                                   88, 89, 90, 91, 92, 93, 94, 95,
                                   96, 97, 98, 99, 100 };
 
-    suite = coco_suite_allocate("custom", 8, 100, dimensions,
+    suite = coco_suite_allocate("custom", 9, 100, dimensions,
                                 "instances:1-15");
 
     return suite;
@@ -900,6 +900,184 @@ static coco_problem_t *f_cec2006_allocate(const size_t number_of_variables,
     return problem;
 }
 
+/*
+  An quadratic optimization problem with a quadratic constraint.
+  The objective function is the sphere model with the optimal value
+  of 0 at (1, 1, ..., 1, 0, 0, ..., 0)^T.
+           \----------/  \----------/
+               N/2           N/2
+
+  Formally, it can be written as
+
+  min. f(x) = \sum_{k=1}^{N/2} (x_k - 1)^2 + \sum_{k=N/2+1}^{N} x_k^2
+
+  such that
+
+  h(x) = x^T S x - \kappa = 0,
+
+  where \kappa = N/2
+  and
+  S = [eye(n / 2, n / 2)     zeros(n / 2, n / 2); ...
+       zeros(n / 2, n / 2)   -eye(n / 2, n / 2)];
+  (Octave/Matlab notation).
+ */
+
+/**
+ * @brief Implements the quadratic problem's objective function
+ * (posed as minimization) without connections to any COCO structures.
+ */
+static double f_quadratic_raw(const double *x,
+                              const size_t number_of_variables) {
+
+  int i = 0;
+  double result = 0.0;
+
+  if (coco_vector_contains_nan(x, number_of_variables))
+    return NAN;
+
+  result = 0.0;
+  for (i = 0; i < number_of_variables; ++i) {
+      if (i < number_of_variables / 2) {
+          result += (x[i] - 1.0) * (x[i] - 1.0);
+      } else {
+          result += x[i] * x[i];
+      }
+  }
+
+  return result;
+}
+
+/**
+ * @brief Uses the raw function to evaluate the COCO problem.
+ */
+static void f_quadratic_evaluate(coco_problem_t *problem,
+                                 const double *x, double *y) {
+  assert(problem->number_of_objectives == 1);
+  y[0] = f_quadratic_raw(x, problem->number_of_variables);
+  assert(y[0] + 1e-13 >= problem->best_value[0]);
+}
+
+/**
+ * @brief Implements the quadratic problem's constraint
+ * without connections to any COCO structures.
+ */
+static double f_quadratic_constraint_raw(const double *x,
+                                         const size_t number_of_variables,
+                                         const double *data) {
+
+    double result = 0.0;
+    size_t i = 0;
+    size_t j = 0;
+    double *tmp = NULL;
+
+    if (coco_vector_contains_nan(x, number_of_variables))
+        return NAN;
+
+    tmp = coco_allocate_vector(number_of_variables);
+    for (i = 0; i < number_of_variables; ++i) {
+        tmp[i] = 0.0;
+        for (j = 0; j < number_of_variables; ++j) {
+            tmp[i] += data[i * number_of_variables + j] * x[j];
+        }
+    }
+    for (i = 0; i < number_of_variables; ++i) {
+        result += tmp[i] * x[i];
+    }
+    coco_free_memory(tmp);
+
+    return result - number_of_variables / 2;
+}
+
+/**
+ * @brief Uses the raw function to evaluate the COCO problem.
+ * Since the COCO framework deals with inequality constraints,
+ * we use a hard-coded epsilon of 1e-8 for the equality
+ * constraint threshold.
+ */
+static void f_quadratic_evaluate_constraint(coco_problem_t *problem,
+                                            const double *x, double *y) {
+    double cons = 0.0;
+    assert(problem->number_of_constraints == 2);
+    cons = f_quadratic_constraint_raw(x, problem->number_of_variables,
+                                      (double *)problem->data);
+    y[0] = cons - 1e-8;
+    y[1] = -cons - 1e-8;
+}
+
+/**
+ * @brief Allocates the polygon problem.
+ */
+static coco_problem_t *f_quadratic_allocate(const size_t number_of_variables,
+                                            const size_t function,
+                                            const size_t instance) {
+    size_t i = 0;
+    size_t j = 0;
+    const size_t number_of_objectives = 1;
+    const size_t number_of_constraints = 2;
+    double *data = NULL;
+    coco_problem_t *problem = coco_problem_allocate(number_of_variables,
+                                                    number_of_objectives,
+                                                    number_of_constraints);
+    /* uint32_t rseed = (uint32_t)(function + 10000 * instance); */
+    /* coco_random_state_t *random_generator = coco_random_new(rseed); */
+    /* double x = 0.0; */
+    problem->evaluate_function = f_quadratic_evaluate;
+    problem->evaluate_constraint = f_quadratic_evaluate_constraint;
+    problem->initial_solution = coco_allocate_vector(number_of_variables);
+    for (i = 0; i < number_of_variables; ++i) {
+        /* Bounds are not relevant for this problem */
+        problem->smallest_values_of_interest[i] = -5.0;
+        problem->largest_values_of_interest[i] = 5.0;
+        if (i < number_of_variables / 2) {
+            problem->best_parameter[i] = 1.0;
+        } else {
+            problem->best_parameter[i] = 0.0;
+        }
+        problem->initial_solution[i] = 0.0;
+    }
+    data = coco_allocate_vector(number_of_variables *
+                                number_of_variables);
+    for (i = 0; i < number_of_variables; ++i) {
+        for (j = 0; j < number_of_variables; ++j) {
+            data[i * number_of_variables + j] = 0.0;
+        }
+    }
+    /* for (i = 0; i < number_of_variables / 2; ++i) { */
+    /*     for (j = 0; j < number_of_variables / 2; ++j) { */
+    /*         x = coco_random_uniform(random_generator); */
+    /*         data[i * number_of_variables + j] = x; */
+    /*         data[j * number_of_variables + i] = x; */
+    /*     } */
+    /* } */
+    for (i = 0; i < number_of_variables; ++i) {
+        if (i < number_of_variables / 2) {
+            data[i * number_of_variables + i] = 1.0;
+        } else {
+            data[i * number_of_variables + i] = -1.0;
+        }
+    }
+    problem->data = (void *)data;
+    /* Provide an initial feasible solution. */
+    for (i = 0; i < number_of_variables; ++i) {
+        if (i < number_of_variables / 2) {
+            problem->initial_solution[i] = sqrt(2.0);
+        } else {
+            problem->initial_solution[i] = 1.0;
+        }
+    }
+
+    problem->best_value[0] = 0.0;
+
+    /* double-check feasibility of initial solution */
+    assert(coco_is_feasible(problem, problem->initial_solution, NULL));
+
+    coco_problem_set_id(problem, "quadratic");
+
+    /* coco_random_free(random_generator); */
+
+    return problem;
+}
+
 /**
  * @brief Returns the problem from the custom suite that
  *        corresponds to the given parameters.
@@ -932,6 +1110,9 @@ static coco_problem_t *suite_custom_get_problem(coco_suite_t *suite,
                                                   instance);
     } else if (5 <= function && function <= 8) {
         problem = f_cec2006_allocate(dimension, function, instance);
+    } else if (function == 9) {
+        problem = f_quadratic_allocate(dimension, function,
+                                                  instance);
     } else {
         coco_error("get_custom_problem(): "
                    "cannot retrieve problem f%lu instance %lu in %luD",
