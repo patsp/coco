@@ -6,3 +6,4 @@
 6 CEC 2006 g11
 7 CEC 2006 g13
 8 CEC 2006 g17
+9 Quadratic
