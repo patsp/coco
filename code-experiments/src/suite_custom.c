@@ -917,9 +917,10 @@ static coco_problem_t *f_cec2006_allocate(const size_t number_of_variables,
 
   where \kappa = N/2
   and
-  S = [eye(n / 2, n / 2)     zeros(n / 2, n / 2); ...
-       zeros(n / 2, n / 2)   -eye(n / 2, n / 2)];
-  (Octave/Matlab notation).
+  S = [eye(n / 2, n / 2)   X; ...
+       n * X'              -eye(n / 2, n / 2)];
+  (Octave/Matlab notation)
+  and X = randn(n / 2, n/ 2).
  */
 
 /**
@@ -985,7 +986,7 @@ static double f_quadratic_constraint_raw(const double *x,
     }
     coco_free_memory(tmp);
 
-    return result - number_of_variables / 2;
+    return result - ((double)number_of_variables) * 0.5;
 }
 
 /**
@@ -1018,9 +1019,9 @@ static coco_problem_t *f_quadratic_allocate(const size_t number_of_variables,
     coco_problem_t *problem = coco_problem_allocate(number_of_variables,
                                                     number_of_objectives,
                                                     number_of_constraints);
-    /* uint32_t rseed = (uint32_t)(function + 10000 * instance); */
-    /* coco_random_state_t *random_generator = coco_random_new(rseed); */
-    /* double x = 0.0; */
+    uint32_t rseed = (uint32_t)(function + 10000 * instance);
+    coco_random_state_t *random_generator = coco_random_new(rseed);
+    double x = 0.0;
     problem->evaluate_function = f_quadratic_evaluate;
     problem->evaluate_constraint = f_quadratic_evaluate_constraint;
     problem->initial_solution = coco_allocate_vector(number_of_variables);
@@ -1042,13 +1043,13 @@ static coco_problem_t *f_quadratic_allocate(const size_t number_of_variables,
             data[i * number_of_variables + j] = 0.0;
         }
     }
-    /* for (i = 0; i < number_of_variables / 2; ++i) { */
-    /*     for (j = 0; j < number_of_variables / 2; ++j) { */
-    /*         x = coco_random_uniform(random_generator); */
-    /*         data[i * number_of_variables + j] = x; */
-    /*         data[j * number_of_variables + i] = x; */
-    /*     } */
-    /* } */
+    for (i = 0; i < number_of_variables / 2; ++i) {
+        for (j = number_of_variables / 2; j < number_of_variables; ++j) {
+            x = coco_random_normal(random_generator);
+            data[i * number_of_variables + j] = x;
+            data[j * number_of_variables + i] = ((double)number_of_variables) * x;
+        }
+    }
     for (i = 0; i < number_of_variables; ++i) {
         if (i < number_of_variables / 2) {
             data[i * number_of_variables + i] = 1.0;
@@ -1060,9 +1061,9 @@ static coco_problem_t *f_quadratic_allocate(const size_t number_of_variables,
     /* Provide an initial feasible solution. */
     for (i = 0; i < number_of_variables; ++i) {
         if (i < number_of_variables / 2) {
-            problem->initial_solution[i] = sqrt(2.0);
+            problem->initial_solution[i] = -1.0;
         } else {
-            problem->initial_solution[i] = 1.0;
+            problem->initial_solution[i] = 0.0;
         }
     }
 
@@ -1073,7 +1074,7 @@ static coco_problem_t *f_quadratic_allocate(const size_t number_of_variables,
 
     coco_problem_set_id(problem, "quadratic");
 
-    /* coco_random_free(random_generator); */
+    coco_random_free(random_generator);
 
     return problem;
 }
