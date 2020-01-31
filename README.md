@@ -44,7 +44,7 @@ The objective is to maximize
 
     2^(D-1)x_1 + 2^(D-2)x_2 + ... + 2x_{D-1} + x_D.
 
-The dimensions `1, 2, ..., 100` are supported.
+The dimensions `1, 2, 3, 4, ..., 15` are supported.
 
 Thomson's problem (suite `custom`, f002)
 --------------------------------------
@@ -140,7 +140,7 @@ and
 
 and `X = randn(N / 2, N / 2)`.
 
-The dimensions `2, 3, 4, ..., 100` are supported.
+The dimensions `2, 4, 6, 8, ..., 100` are supported.
 
 A parabolic optimization problem (suite `custom`, f010)
 -----------------------------------------------------
@@ -170,7 +170,7 @@ and
 
 (Octave/Matlab notation).
 
-The dimensions `2, 3, 4, ..., 100` are supported.
+The dimensions `2, 4, 6, 8, ..., 100` are supported.
 
 How to perform an experiment using the `custom` suite
 -----------------------------------------------------
