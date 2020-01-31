@@ -44,7 +44,7 @@ The objective is to maximize
 
     2^(D-1)x_1 + 2^(D-2)x_2 + ... + 2x_{D-1} + x_D.
 
-The dimensions `1, 2, ..., 100` are supported.
+The dimensions `1, 2, 3, 4, ..., 15` are supported.
 
 How to perform an experiment using the `custom` suite
 -----------------------------------------------------
