@@ -1,3 +1,203 @@
+Extension of the Comparing Continuous Optimizers (COCO) framework
+=================================================================
+
+This branch is an extension of the COCO framework. It is based
+on the development branch. Please take a close look below
+in the section `numbbo/coco: Comparing Continuous Optimizers`
+for instructions on how to use the framework and how to perform
+experiments using the COCO framework with your own algorithms.
+The COCO framework also includes a post-processing Python tool
+to create plots of the experimental results.
+Once you have the example described there running, you have
+the prerequisites to continue with the instructions here.
+
+Below in the `description by folder`
+subsection (in `numbbo/coco: Comparing Continuous Optimizers`),
+the available benchmark suites are listed. In addition, there
+is also a suite `bbob-constrained` in the development branch
+that contains the COCO constrained suite. This branch here contains a
+new suite called `custom`. It implements the optimization
+problems described in the following subsections.
+
+The Klee-Minty problem (suite `custom`, f001)
+-------------------------------------------
+
+The constraints represent the Klee-Minty cube.
+
+Klee, V., Minty, G.J.:
+How good is the simplex algorithm? In: Shisha, O. (ed.) Inequalities III,
+pp. 159–175. Academic, New York (1972)
+
+The actual constraints are taken from
+https://en.wikipedia.org/wiki/Klee%E2%80%93Minty_cube.
+
+    x_1              <= 5
+    4x_1 +  x_2       <= 25
+    8x_1 + 4x_2 + x_3 <= 125
+    .
+    .
+    .
+    2^Dx_1 + 2^(D-1)x_2 + ... + 4x_{D-1} + x_D <= 5^D
+    x_1 >= 0, ..., x_D >= 0
+
+The objective is to maximize
+
+    2^(D-1)x_1 + 2^(D-2)x_2 + ... + 2x_{D-1} + x_D.
+
+The dimensions `1, 2, ..., 100` are supported.
+
+Thomson's problem (suite `custom`, f002)
+--------------------------------------
+
+The Thomson problem can be stated as
+(see https://en.wikipedia.org/wiki/Thomson_problem):
+
+    Given M points, minimize sum_{1 <= i,j <= M with i<j} 1/r_{ij}
+    subject to the M points being on the unit sphere,
+    where r_{ij} = ||\mathrm{p}_i - \mathrm{p}_j|| and
+    \mathrm{p}_i is the i-th point.
+
+This implementation assumes that all the points are given
+in one vector as follows:
+
+    x = (x_1, y_1, z_1, x_2, y_2, z_2, ..., x_M, y_M, z_M)^T.
+
+The supported problem dimensions `D` in the framework are `3, 6, 9, 12 ..., 99`.
+Note that `M=D/3`.
+
+Polygon optimization problem (suite `custom`, f003)
+-------------------------------------------------
+
+A polygon optimization problem: Given a number of points,
+the goal is to move the points in a way such that the area
+of the polygon defined by the points is maximized
+while keeping the circumference fixed to a given value.
+More formally, the problem is stated as follows:
+Given `K` points in `\mathbb{R}^2`, the area of the polygon
+defined by `K+1` nodes with the `(K+1)`-th node being
+w.l.o.g. `(0, 0)^T`, the goal is to maximize the area
+
+    A(x) = (1/2) * \sum_{i=1}^{K-1}(x_i * x_{K+i+1} - x_{i+1} * x_{K+i})
+
+such that
+
+    h(x) = \sqrt{x_1^2 + x_{K+1}^2} +
+    \sum_{i=1}^{K} \sqrt{(x_i - x{i+1})^2 + (x_{K+i} - x_{K+i+1})^2}
+    - L = 0.
+
+The function `h(x)` defines the circumference constraint, where
+`L` is the given circumference.
+This implementation assumes that all the points are given
+in one vector as follows:
+
+    x = (x_1, x_2, ..., x_K, y_1, y_2, ..., y_K)^T,
+
+where here the `(x_i, y_i)^T` indicate coordinates in `\mathbb{R}^2`
+and above the `x_i` indicate vector elements of this vector defined
+here.
+Additionally, this implementation poses the problem as a minimization
+problem. The maximum area given the circumference can be computed,
+since in the limit case of infinitely many points, one gets a circle.
+
+The supported problem dimensions `D` in the framework are
+`2, 4, 6, 8, ..., 100`. Note that `K=D/2`.
+
+A subset of CEC 2006 competition problems (suite `custom`, f005, f006, f007, f008)
+--------------------------------------------------------------------------------
+
+The CEC 2006 competition problems `g03`, `g11`, `g13`, and `g17`
+are implemented. The dimensions are `10`, `2`, `5`, and `6`,
+respectively, and must be set accordingly when setting up
+the respective COCO experiment.
+
+A hyperbolic optimization problem (suite `custom`, f009)
+------------------------------------------------------
+
+A hyperbolic optimization problem with a hyperbolic constraint.
+The objective function is the sphere model with the optimal value
+of `0` at
+
+    (1, 1, ..., 1, 0, 0, ..., 0)^T.
+     \----------/  \----------/
+         N/2           N/2
+
+Formally, it can be written as
+
+    min. f(x) = \sum_{k=1}^{N/2} (x_k - 1)^2 + \sum_{k=N/2+1}^{N} x_k^2
+
+such that
+
+    h(x) = x^T S x - \kappa = 0,
+
+where `\kappa = N/2`
+
+and
+
+    S = [eye(N / 2, N / 2)   X; ...
+         N * X'              -eye(N / 2, N / 2)];
+
+(Octave/Matlab notation)
+
+and `X = randn(N / 2, N / 2)`.
+
+The dimensions `2, 3, 4, ..., 100` are supported.
+
+A parabolic optimization problem (suite `custom`, f010)
+-----------------------------------------------------
+
+A parabolic optimization problem with a parabolic constraint.
+The objective function is the sphere model with the optimal value
+of `0` at
+
+    (1, 1, ..., 1, 0, 0, ..., 0)^T.
+     \----------/  \----------/
+         N/2           N/2
+
+Formally, it can be written as
+
+    min. f(x) = \sum_{k=1}^{N/2} (x_k - 1)^2 + \sum_{k=N/2+1}^{N} x_k^2
+
+such that
+
+    h(x) = x^T S x - \kappa = 0,
+
+where `\kappa = N/2`
+
+and
+
+    S = [eye(N / 2, N / 2)   zeros(N / 2, N / 2); ...
+         zeros(N / 2, N / 2) zeros(N / 2, N / 2)];
+
+(Octave/Matlab notation).
+
+The dimensions `2, 3, 4, ..., 100` are supported.
+
+How to perform an experiment using the `custom` suite
+-----------------------------------------------------
+
+The example given here shows how to perform an experiment
+using the `custom` suite in Matlab/Octave. For the other
+language bindings, it is analogous. The basis is the
+`exampleexperiment.m` file, on which the steps below are based.
+
+1. Set `suite_name = 'custom';`
+2. `observer = 'bbob'` works for the `custom` suite as well.
+3. Adjust the dimensions and number of instances, e.g.
+   `suite = cocoSuite(suite_name, 'instances: 1-15', 'dimensions: 2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40');`
+   as an example for the hyperbolic problem (only even dimensions supported)
+   and 15 instances.
+4. Adjust the other settings according to your preference (see the comments and the COCO documentation for their meaning).
+5. Call your algorithm in the experimentation loop.
+   By default all problems of the `custom` suite are
+   run and the result data is collected inside
+   a folder `exdata` in your current working directory.
+   (Of course, you can adapt the experimentation loop to
+   skip over some functions. Note that every problem
+   is run for a given number of random instances.)
+6. The post-processing tool can then be used to create plots
+   using this result data.
+
+
 numbbo/coco: Comparing Continuous Optimizers
 ============================================
 
@@ -535,7 +735,7 @@ Citation
 --------
 You may cite this work in a scientific context as
 
-N. Hansen, A. Auger, O. Mersmann, T. Tušar, D. Brockhoff. [COCO: A Platform for Comparing Continuous Optimizers in a Black-Box Setting](http://numbbo.github.io/coco-doc/), _ArXiv e-prints_, [arXiv:1603.08785](http://arxiv.org/abs/1603.08785), 2016.
+N. Hansen, A. Auger, O. Mersmann, T. TuÅ¡ar, D. Brockhoff. [COCO: A Platform for Comparing Continuous Optimizers in a Black-Box Setting](http://numbbo.github.io/coco-doc/), _ArXiv e-prints_, [arXiv:1603.08785](http://arxiv.org/abs/1603.08785), 2016.
 
 ```
 @ARTICLE{hansen2016cocoplat, 
