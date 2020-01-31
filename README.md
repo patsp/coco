@@ -57,7 +57,7 @@ language bindings, it is analogous. The basis is the
 1. Set `suite_name = 'custom';`
 2. `observer = 'bbob'` works for the `custom` suite as well.
 3. Adjust the dimensions and number of instances, e.g.
-   `suite = cocoSuite(suite_name, 'instances: 1-15', 'dimensions: 2,3,5,10,20,30,40');`.
+   `suite = cocoSuite(suite_name, 'instances: 1-15', 'dimensions: 1,2,3,4,5,6,7,8,9,10');`.
 4. Adjust the other settings according to your preference (see the comments and the COCO documentation for their meaning).
 5. Call your algorithm in the experimentation loop.
    By default all problems of the `custom` suite are
