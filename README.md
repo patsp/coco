@@ -1,3 +1,74 @@
+Extension of the Comparing Continuous Optimizers (COCO) framework
+=================================================================
+
+This branch is an extension of the COCO framework. It is based
+on the development branch. Please take a close look below
+in the section `numbbo/coco: Comparing Continuous Optimizers`
+for instructions on how to use the framework and how to perform
+experiments using the COCO framework with your own algorithms.
+The COCO framework also includes a post-processing Python tool
+to create plots of the experimental results.
+Once you have the example described there running, you have
+the prerequisites to continue with the instructions here.
+
+Below in the `description by folder`
+subsection (in `numbbo/coco: Comparing Continuous Optimizers`),
+the available benchmark suites are listed. In addition, there
+is also a suite `bbob-constrained` in the development branch
+that contains the COCO constrained suite. This branch here contains a
+new suite called `custom`. It implements the optimization
+problems described in the following subsections.
+
+The Klee-Minty problem (suite `custom`, f001)
+-------------------------------------------
+
+The constraints represent the Klee-Minty cube.
+
+Klee, V., Minty, G.J.:
+How good is the simplex algorithm? In: Shisha, O. (ed.) Inequalities III,
+pp. 159–175. Academic, New York (1972)
+
+The actual constraints are taken from
+https://en.wikipedia.org/wiki/Klee%E2%80%93Minty_cube.
+
+    x_1              <= 5
+    4x_1 +  x_2       <= 25
+    8x_1 + 4x_2 + x_3 <= 125
+    .
+    .
+    .
+    2^Dx_1 + 2^(D-1)x_2 + ... + 4x_{D-1} + x_D <= 5^D
+    x_1 >= 0, ..., x_D >= 0
+
+The objective is to maximize
+
+    2^(D-1)x_1 + 2^(D-2)x_2 + ... + 2x_{D-1} + x_D.
+
+The dimensions `1, 2, ..., 100` are supported.
+
+How to perform an experiment using the `custom` suite
+-----------------------------------------------------
+
+The example given here shows how to perform an experiment
+using the `custom` suite in Matlab/Octave. For the other
+language bindings, it is analogous. The basis is the
+`exampleexperiment.m` file, on which the steps below are based.
+
+1. Set `suite_name = 'custom';`
+2. `observer = 'bbob'` works for the `custom` suite as well.
+3. Adjust the dimensions and number of instances, e.g.
+   `suite = cocoSuite(suite_name, 'instances: 1-15', 'dimensions: 2,3,5,10,20,30,40');`.
+4. Adjust the other settings according to your preference (see the comments and the COCO documentation for their meaning).
+5. Call your algorithm in the experimentation loop.
+   By default all problems of the `custom` suite are
+   run and the result data is collected inside
+   a folder `exdata` in your current working directory.
+   (Of course, you can adapt the experimentation loop to
+   skip over some functions. Note that every problem
+   is run for a given number of random instances.)
+6. The post-processing tool can then be used to create plots
+   using this result data.
+
 numbbo/coco: Comparing Continuous Optimizers
 ============================================
 
